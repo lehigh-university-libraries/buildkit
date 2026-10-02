@@ -1,0 +1,333 @@
+name: Build and Push Docker Images
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - ".github/workflows/**"
+      - "ci/**"
+      - "cmd/**"
+      - "go.mod"
+      - "go.sum"
+      - "images/**"
+      - "internal/**"
+      - "docker-bake.hcl"
+      - "Makefile"
+  workflow_dispatch:
+    inputs:
+      image:
+        description: "Single changed image to build with its dependents"
+        required: false
+        type: string
+      all:
+        description: "Build every image"
+        required: false
+        type: boolean
+        default: false
+      tag:
+        description: "Fallback tag for unversioned images or non-main builds"
+        required: false
+        type: string
+      version-tags:
+        description: "Publish tags from the software version in each image"
+        required: false
+        type: boolean
+        default: true
+concurrency:
+  group: ${{ github.ref }}-${{ inputs.tag && inputs.tag || github.ref_name }}
+  cancel-in-progress: true
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    name: "lint ${{ inputs.tag && inputs.tag || github.ref_name }}"
+    steps:
+      - uses: "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803" # v6
+
+      - name: lint
+        run: |
+          mapfile -d '' scripts < <(git grep -Ilz -E '^#!.*(ba)?sh')
+          shellcheck "${scripts[@]}"
+
+  plan:
+    runs-on: ubuntu-24.04
+    name: Plan affected images
+    needs: lint
+    outputs:
+      images: ${{ steps.plan.outputs.images }}
+      fallback_images: ${{ steps.plan.outputs.fallback_images }}
+      level0: ${{ steps.plan.outputs.level0 }}
+      level1: ${{ steps.plan.outputs.level1 }}
+      level2: ${{ steps.plan.outputs.level2 }}
+      level3: ${{ steps.plan.outputs.level3 }}
+      level4: ${{ steps.plan.outputs.level4 }}
+      tests: ${{ steps.plan.outputs.tests }}
+      test_level0: ${{ steps.plan.outputs.test_level0 }}
+      test_level1: ${{ steps.plan.outputs.test_level1 }}
+      test_level2: ${{ steps.plan.outputs.test_level2 }}
+      test_level3: ${{ steps.plan.outputs.test_level3 }}
+      test_level4: ${{ steps.plan.outputs.test_level4 }}
+      has_builds: ${{ steps.plan.outputs.has_builds }}
+    steps:
+      - uses: "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803" # v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version-file: go.mod
+
+      - name: Test planner and repository contracts
+        run: go test -count=1 ./...
+
+      - id: plan
+        name: Plan
+        env:
+          BASE: ${{ github.event.before }}
+          HEAD: ${{ github.sha }}
+          IMAGE: ${{ inputs.image || '' }}
+          ALL: ${{ inputs.all || false }}
+          VERSION_TAGS: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') || inputs.version-tags || false }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch || 'main' }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          args=(plan --head "$HEAD")
+
+          if [ -n "$BASE" ] && [ "$BASE" != "0000000000000000000000000000000000000000" ]; then
+            args+=(--base "$BASE")
+          fi
+
+          if [ -n "$IMAGE" ]; then
+            args+=(--image "$IMAGE")
+          fi
+
+          if [ "$ALL" = "true" ]; then
+            args+=(--all)
+          fi
+
+          ./ci/image-metadata.sh "${args[@]}" | tee build-plan.out
+          cat build-plan.out >> "$GITHUB_OUTPUT"
+
+          FALLBACK_IMAGES="$(sed -n 's/^images=//p' build-plan.out)"
+          if [ "$EVENT_NAME" = "push" ] &&
+             [ "$REF_NAME" != "$DEFAULT_BRANCH" ] &&
+             [ "$VERSION_TAGS" != "true" ]; then
+            MERGE_BASE="$(git merge-base "$HEAD" "origin/${DEFAULT_BRANCH}")"
+            FALLBACK_IMAGES="$(
+              ./ci/image-metadata.sh plan --base "$MERGE_BASE" --head "$HEAD" |
+                sed -n 's/^images=//p'
+            )"
+          fi
+          echo "fallback_images=${FALLBACK_IMAGES}" >> "$GITHUB_OUTPUT"
+
+      - name: Summary
+        run: |
+          echo "Images: ${{ steps.plan.outputs.images }}"
+          echo "Fallback-tag images: ${{ steps.plan.outputs.fallback_images }}"
+          echo "Tests: ${{ steps.plan.outputs.tests }}"
+          echo "Level 0 tests: ${{ steps.plan.outputs.test_level0 }}"
+          echo "Level 1 tests: ${{ steps.plan.outputs.test_level1 }}"
+          echo "Level 2 tests: ${{ steps.plan.outputs.test_level2 }}"
+          echo "Level 3 tests: ${{ steps.plan.outputs.test_level3 }}"
+          echo "Level 4 tests: ${{ steps.plan.outputs.test_level4 }}"
+
+  build-level-0:
+    if: ${{ needs.plan.outputs.level0 != '[]' }}
+    needs: plan
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJson(needs.plan.outputs.level0) }}
+    uses: ./.github/workflows/build.yml
+    with:
+      image: ${{ matrix.image }}
+      repository: lehighlts
+      fallback-tag: ${{ inputs.tag && inputs.tag || github.ref_name }}
+      version-tags: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') || inputs.version-tags || false }}
+      build-images: ${{ needs.plan.outputs.fallback_images }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+  build-level-1:
+    if: ${{ always() && needs.plan.outputs.level1 != '[]' && !cancelled() && !failure() }}
+    needs: [plan, build-level-0]
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJson(needs.plan.outputs.level1) }}
+    uses: ./.github/workflows/build.yml
+    with:
+      image: ${{ matrix.image }}
+      repository: lehighlts
+      fallback-tag: ${{ inputs.tag && inputs.tag || github.ref_name }}
+      version-tags: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') || inputs.version-tags || false }}
+      build-images: ${{ needs.plan.outputs.fallback_images }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+  build-level-2:
+    if: ${{ always() && needs.plan.outputs.level2 != '[]' && !cancelled() && !failure() }}
+    needs: [plan, build-level-1]
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJson(needs.plan.outputs.level2) }}
+    uses: ./.github/workflows/build.yml
+    with:
+      image: ${{ matrix.image }}
+      repository: lehighlts
+      fallback-tag: ${{ inputs.tag && inputs.tag || github.ref_name }}
+      version-tags: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') || inputs.version-tags || false }}
+      build-images: ${{ needs.plan.outputs.fallback_images }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+  build-level-3:
+    if: ${{ always() && needs.plan.outputs.level3 != '[]' && !cancelled() && !failure() }}
+    needs: [plan, build-level-2]
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJson(needs.plan.outputs.level3) }}
+    uses: ./.github/workflows/build.yml
+    with:
+      image: ${{ matrix.image }}
+      repository: lehighlts
+      fallback-tag: ${{ inputs.tag && inputs.tag || github.ref_name }}
+      version-tags: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') || inputs.version-tags || false }}
+      build-images: ${{ needs.plan.outputs.fallback_images }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+  build-level-4:
+    if: ${{ always() && needs.plan.outputs.level4 != '[]' && !cancelled() && !failure() }}
+    needs: [plan, build-level-3]
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJson(needs.plan.outputs.level4) }}
+    uses: ./.github/workflows/build.yml
+    with:
+      image: ${{ matrix.image }}
+      repository: lehighlts
+      fallback-tag: ${{ inputs.tag && inputs.tag || github.ref_name }}
+      version-tags: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') || inputs.version-tags || false }}
+      build-images: ${{ needs.plan.outputs.fallback_images }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+  test-level-0:
+    if: ${{ always() && needs.plan.outputs.test_level0 != '[]' && !cancelled() && !failure() }}
+    needs: [plan, build-level-0]
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJson(needs.plan.outputs.test_level0) }}
+    uses: ./.github/workflows/test.yml
+    with:
+      image: ${{ matrix.image }}
+      repository: lehighlts
+      fallback-tag: ${{ inputs.tag && inputs.tag || github.ref_name }}
+      version-tags: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') || inputs.version-tags || false }}
+      build-images: ${{ needs.plan.outputs.fallback_images }}
+    permissions:
+      contents: read
+      packages: read
+
+  test-level-1:
+    if: ${{ always() && needs.plan.outputs.test_level1 != '[]' && !cancelled() && !failure() }}
+    needs: [plan, build-level-1]
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJson(needs.plan.outputs.test_level1) }}
+    uses: ./.github/workflows/test.yml
+    with:
+      image: ${{ matrix.image }}
+      repository: lehighlts
+      fallback-tag: ${{ inputs.tag && inputs.tag || github.ref_name }}
+      version-tags: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') || inputs.version-tags || false }}
+      build-images: ${{ needs.plan.outputs.fallback_images }}
+    permissions:
+      contents: read
+      packages: read
+
+  test-level-2:
+    if: ${{ always() && needs.plan.outputs.test_level2 != '[]' && !cancelled() && !failure() }}
+    needs: [plan, build-level-2]
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJson(needs.plan.outputs.test_level2) }}
+    uses: ./.github/workflows/test.yml
+    with:
+      image: ${{ matrix.image }}
+      repository: lehighlts
+      fallback-tag: ${{ inputs.tag && inputs.tag || github.ref_name }}
+      version-tags: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') || inputs.version-tags || false }}
+      build-images: ${{ needs.plan.outputs.fallback_images }}
+    permissions:
+      contents: read
+      packages: read
+
+  test-level-3:
+    if: ${{ always() && needs.plan.outputs.test_level3 != '[]' && !cancelled() && !failure() }}
+    needs: [plan, build-level-3]
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJson(needs.plan.outputs.test_level3) }}
+    uses: ./.github/workflows/test.yml
+    with:
+      image: ${{ matrix.image }}
+      repository: lehighlts
+      fallback-tag: ${{ inputs.tag && inputs.tag || github.ref_name }}
+      version-tags: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') || inputs.version-tags || false }}
+      build-images: ${{ needs.plan.outputs.fallback_images }}
+    permissions:
+      contents: read
+      packages: read
+
+  test-level-4-matrix:
+    if: ${{ always() && needs.plan.outputs.test_level4 != '[]' && !cancelled() && !failure() }}
+    needs: [plan, build-level-4]
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJson(needs.plan.outputs.test_level4) }}
+    uses: ./.github/workflows/test.yml
+    with:
+      image: ${{ matrix.image }}
+      repository: lehighlts
+      fallback-tag: ${{ inputs.tag && inputs.tag || github.ref_name }}
+      version-tags: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') || inputs.version-tags || false }}
+      build-images: ${{ needs.plan.outputs.fallback_images }}
+    permissions:
+      contents: read
+      packages: read
+
+  test-level-4:
+    if: ${{ always() }}
+    needs: [test-level-4-matrix]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Verify level-4 matrix
+        env:
+          RESULT: ${{ needs.test-level-4-matrix.result }}
+        run: |
+          if [[ "${RESULT}" != "success" && "${RESULT}" != "skipped" ]]; then
+            echo "Level-4 matrix result: ${RESULT}" >&2
+            exit 1
+          fi

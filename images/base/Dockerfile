@@ -1,0 +1,176 @@
+FROM alpine
+
+ARG TARGETARCH
+# renovate: datasource=github-releases depName=s6-overlay packageName=just-containers/s6-overlay
+ARG SOFTWARE_VERSION=3.2.2.0
+ARG S6_BASE_URL="https://github.com/just-containers/s6-overlay/releases/download/v${SOFTWARE_VERSION}"
+ARG S6_OVERLAY_NOARCH=s6-overlay-noarch.tar.xz
+ARG S6_OVERLAY_NOARCH_SHA256="85848f6baab49fb7832a5557644c73c066899ed458dd1601035cf18e7c759f26"
+ARG S6_OVERLAY_SYMLINKS_ARCH=s6-overlay-symlinks-arch.tar.xz
+ARG S6_OVERLAY_SYMLINKS_ARCH_SHA256="9364479e3f9f4d42425312ced93e25ca2a8896d0405ac747d815ca56338321f0"
+ARG S6_OVERLAY_SYMLINKS_NOARCH=s6-overlay-symlinks-noarch.tar.xz
+ARG S6_OVERLAY_SYMLINKS_NOARCH_SHA256="fae2b2fd6da3067a5f484e915dc5744e2b152abc81721a72f3d2e9b2d6657204"
+ARG S6_OVERLAY_AMD64=s6-overlay-x86_64.tar.xz
+ARG S6_OVERLAY_AMD64_SHA256="5a09e2f1878dc5f7f0211dd7bafed3eee1afe4f813e872fff2ab1957f266c7c0"
+ARG S6_OVERLAY_ARM64=s6-overlay-aarch64.tar.xz
+ARG S6_OVERLAY_ARM64_SHA256="50a5d4919e688fafc95ce9cf0055a46f74847517bcf08174bac811de234ec7d2"
+
+LABEL org.opencontainers.image.licenses="MIT"
+
+# Start s6
+ENTRYPOINT [ "/init" ]
+
+ARG \
+  # renovate: datasource=repology depName=alpine_3_24/bash
+  BASH_VERSION=5.3.9-r1 \
+  # renovate: datasource=repology depName=alpine_3_24/ca-certificates
+  CA_CERTIFICATES_VERSION=20260909-r0 \
+  # renovate: datasource=repology depName=alpine_3_24/curl
+  CURL_VERSION=8.22.0-r0 \
+  # renovate: datasource=repology depName=alpine_3_24/git
+  GIT_VERSION=2.54.0-r0 \
+  # renovate: datasource=repology depName=alpine_3_24/gnupg
+  GNUPG_VERSION=2.4.9-r1 \
+  # renovate: datasource=repology depName=alpine_3_24/gzip
+  GZIP_VERSION=1.14-r3 \
+  # renovate: datasource=repology depName=alpine_3_24/jq
+  JQ_VERSION=1.8.2-r0 \
+  # renovate: datasource=repology depName=alpine_3_24/mariadb-client
+  MARIADB_CLIENT_VERSION=11.8.8-r0 \
+  # renovate: datasource=repology depName=alpine_3_24/netcat-openbsd
+  NETCAT_OPENBSD_VERSION=1.234.1-r0 \
+  # renovate: datasource=repology depName=alpine_3_24/openssl
+  OPENSSL_VERSION=3.5.9-r0 \
+  # renovate: datasource=repology depName=alpine_3_24/patch
+  PATCH_VERSION=2.8-r0 \
+  # renovate: datasource=repology depName=alpine_3_24/procps-ng
+  PROCPS_VERSION=4.0.6-r0 \
+  # renovate: datasource=repology depName=alpine_3_24/shadow
+  SHADOW_VERSION=4.18.0-r1 \
+  # renovate: datasource=repology depName=alpine_3_24/tar
+  TAR_VERSION=1.35-r5 \
+  # renovate: datasource=repology depName=alpine_3_24/util-linux
+  UTIL_LINUX_VERSION=2.42.3-r1 \
+  # renovate: datasource=repology depName=alpine_3_24/wget
+  WGET_VERSION=1.25.0-r3 \
+  # renovate: datasource=repology depName=alpine_3_24/xz
+  XZ_VERSION=5.8.4-r0 \
+  # renovate: datasource=repology depName=alpine_3_24/yq-go
+  YQ_VERSION=4.53.3-r1
+
+# Install packages and tools required by all downstream images.
+# Platform specific does require arch specific identifier.
+RUN --mount=type=cache,id=base-apk-${TARGETARCH},sharing=locked,target=/var/cache/apk \
+    ln -s /var/cache/apk /etc/apk/cache && \
+    apk add \
+        bash=="${BASH_VERSION}" \
+        ca-certificates=="${CA_CERTIFICATES_VERSION}" \
+        curl=="${CURL_VERSION}" \
+        git=="${GIT_VERSION}" \
+        gnupg=="${GNUPG_VERSION}" \
+        gzip=="${GZIP_VERSION}" \
+        jq=="${JQ_VERSION}" \
+        mariadb-client=="${MARIADB_CLIENT_VERSION}" \
+        netcat-openbsd=="${NETCAT_OPENBSD_VERSION}" \
+        openssl=="${OPENSSL_VERSION}" \
+        patch=="${PATCH_VERSION}" \
+        procps=="${PROCPS_VERSION}" \
+        shadow=="${SHADOW_VERSION}" \
+        tar=="${TAR_VERSION}" \
+        util-linux=="${UTIL_LINUX_VERSION}" \
+        wget=="${WGET_VERSION}" \
+        xz=="${XZ_VERSION}" \
+        yq=="${YQ_VERSION}" \
+    && \
+    addgroup -g 2000 jwt && \
+    echo '' > /root/.ash_history
+
+ENV DOWNLOAD_CACHE_DIRECTORY=/opt/downloads
+
+# Install s6.
+RUN --mount=type=bind,source=rootfs/usr/local/bin/download.sh,target=/usr/local/bin/download.sh \
+    --mount=type=cache,id=base-downloads-${TARGETARCH},sharing=locked,target=/opt/downloads \
+    download.sh \
+        --url "${S6_BASE_URL}/${S6_OVERLAY_NOARCH}" \
+        --sha256 "${S6_OVERLAY_NOARCH_SHA256}" \
+        --dest / \
+    && \
+    download.sh \
+        --url "${S6_BASE_URL}/${S6_OVERLAY_SYMLINKS_ARCH}" \
+        --sha256 "${S6_OVERLAY_SYMLINKS_ARCH_SHA256}" \
+        --dest / \
+    && \
+    download.sh \
+        --url "${S6_BASE_URL}/${S6_OVERLAY_SYMLINKS_NOARCH}" \
+        --sha256 "${S6_OVERLAY_SYMLINKS_NOARCH_SHA256}" \
+        --dest / \
+    && \
+    echo '' > /root/.ash_history
+
+RUN --mount=type=bind,source=rootfs/usr/local/bin/download.sh,target=/usr/local/bin/download.sh \
+    --mount=type=cache,id=base-downloads-${TARGETARCH},sharing=locked,target=/opt/downloads \
+    if [ "${TARGETARCH}" = "amd64" ]; \
+    then \
+        download.sh \
+            --url "${S6_BASE_URL}/${S6_OVERLAY_AMD64}" \
+            --sha256 "${S6_OVERLAY_AMD64_SHA256}" \
+            --dest / ; \
+    else \
+        download.sh \
+            --url "${S6_BASE_URL}/${S6_OVERLAY_ARM64}" \
+            --sha256 "${S6_OVERLAY_ARM64_SHA256}" \
+            --dest / ; \
+    fi && \
+    echo '' > /root/.ash_history
+
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
+
+ENV \
+    CERTIFICATE_AUTHORITY=/usr/local/share/ca-certificates/rootCA.pem \
+    CERTIFICATE=/usr/local/share/ca-certificates/cert.pem \
+    CONFD_ENABLE_SERVICE=false \
+    CONFD_LOG_LEVEL=error \
+    CONFD_POLLING_INTERVAL=30 \
+    S6_BEHAVIOUR_IF_STAGE2_FAILS=2 \
+    S6_CMD_WAIT_FOR_SERVICE=1 \
+    S6_CMD_WAIT_FOR_SERVICES_MAXTIME=30000 \
+    S6_LOGGING=0 \
+    S6_SERVICES_GRACETIME=30000 \
+    TERM=xterm
+
+# CERT_AUTHORITY, CERT_PUBLIC, JWT_PUBLIC_KEY, and JWT_PRIVATE_KEY are defined
+# as empty values in /etc/defaults because Docker does not support multiline
+# ENV values. Deployments that use JWT authentication must inject their own
+# key pair through secrets or environment variables.
+ENV \
+    APP_UID=100 \
+    DB_BOOTSTRAP_ENABLED=false \
+    DB_HOST=mariadb \
+    DB_NAME=default \
+    DB_PASSWORD= \
+    DB_PORT=3306 \
+    DB_ROOT_PASSWORD= \
+    DB_ROOT_USER=root \
+    DB_USER=default \
+    DEVELOPMENT_ENVIRONMENT=false \
+    JWT_ADMIN_TOKEN= \
+    LIBOPS_PROJECT_ID= \
+    LIBOPS_SITE_ID= \
+    UID= \
+    VAULT_ADDR= \
+    VAULT_AUTH_METHOD=gcp \
+    VAULT_AUTH_PATH=gcp \
+    VAULT_AUTH_ROLE=site-workload \
+    VAULT_GCP_AUTH_TYPE=iam \
+    VAULT_GCP_JWT_TTL=600 \
+    VAULT_GCP_SERVICE_ACCOUNT=default \
+    VAULT_ORGANIZATION_SECRET_MOUNT=secret-organization \
+    VAULT_PROJECT_SECRET_MOUNT=secret-project \
+    VAULT_SECRET_OUTPUT_DIR=/run/secrets \
+    VAULT_SECRET_OVERWRITE=false \
+    VAULT_SITE_SECRET_MOUNT=secret-site
+
+COPY --link rootfs /
+
+# Install confd
+COPY --link confd/confd-0.15.0-linux-${TARGETARCH} /usr/local/bin/confd

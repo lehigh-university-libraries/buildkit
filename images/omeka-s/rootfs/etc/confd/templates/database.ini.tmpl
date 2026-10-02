@@ -1,0 +1,6 @@
+{{- define "doubleQuoteEscape" -}}{{- $escaped := replace . "\\" "\\\\" -1 -}}{{- replace $escaped "\"" "\\\"" -1 -}}{{- end -}}
+user = "{{ template "doubleQuoteEscape" (getenv "DB_USER") }}"
+password = "{{ template "doubleQuoteEscape" (getenv "DB_PASSWORD") }}"
+dbname = "{{ template "doubleQuoteEscape" (getenv "DB_NAME") }}"
+host = "{{ template "doubleQuoteEscape" (getenv "DB_HOST") }}"
+port = "{{ template "doubleQuoteEscape" (getenv "DB_PORT") }}"

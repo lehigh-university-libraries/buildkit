@@ -1,0 +1,10 @@
+.dockerignore
+.git
+.gitignore
+.github
+.vscode
+.composer
+.ssh
+.bash_profile
+gha-creds-*.json
+Dockerfile

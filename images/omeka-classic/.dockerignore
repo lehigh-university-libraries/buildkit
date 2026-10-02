@@ -1,0 +1,9 @@
+.git
+.github
+.DS_Store
+secrets/*
+!secrets/.gitignore
+certs/*
+vendor
+node_modules
+

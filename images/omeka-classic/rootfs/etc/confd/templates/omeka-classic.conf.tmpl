@@ -1,0 +1,49 @@
+root /var/www/omeka-classic;
+index index.php;
+
+error_log /dev/stderr;
+access_log /dev/stdout combined;
+
+location = /admin {
+    return 301 /admin/$is_args$args;
+}
+
+location /admin/ {
+    try_files $uri $uri/ /admin/index.php?$args;
+}
+
+location = /install {
+    return 301 /install/$is_args$args;
+}
+
+location /install/ {
+    try_files $uri $uri/ /install/install.php?$args;
+}
+
+location / {
+    try_files $uri $uri/ /index.php?$args;
+}
+
+location ~ ^/(?:index|admin/index|install/install)\.php$ {
+    try_files $uri =404;
+    fastcgi_pass unix:{{ getenv "PHP_FPM_SOCKET" }};
+    fastcgi_index index.php;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    {{ if eq (getenv "INGRESS_SCHEME") "https" }}
+    fastcgi_param HTTPS on;
+    fastcgi_param HTTP_SCHEME https;
+    {{ end }}
+    include fastcgi_params;
+}
+
+location ~ \.php(?:/|$) {
+    return 404;
+}
+
+location ~* \.ini$ {
+    deny all;
+}
+
+location ~ /\. {
+    deny all;
+}

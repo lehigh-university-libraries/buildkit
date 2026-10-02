@@ -1,0 +1,6 @@
+.git/
+.env
+secrets/
+vendor/
+web/wp/
+web/app/uploads/

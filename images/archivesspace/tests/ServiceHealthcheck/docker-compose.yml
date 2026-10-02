@@ -1,0 +1,23 @@
+---
+name: archivesspace-servicehealthcheck
+services:
+  archivesspace:
+    image: ${ARCHIVESSPACE:-lehighlts/archivesspace:local}
+    environment:
+      ASPACE_DB_MIGRATE: "true"
+      DB_PASSWORD: "archive&=space%#password"
+      APPCONFIG_SOLR_URL: http://solr:8983/solr/archivesspace
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      solr:
+        condition: service_healthy
+  mariadb:
+    image: ${MARIADB11:-lehighlts/mariadb:local-11}
+    environment:
+      DB_ROOT_PASSWORD: root
+      DB_NAME: archivesspace
+      DB_USER: archivesspace
+      DB_PASSWORD: "archive&=space%#password"
+  solr:
+    image: ${ARCHIVESSPACE_SOLR:-lehighlts/archivesspace-solr:local}

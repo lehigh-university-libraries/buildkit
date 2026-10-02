@@ -1,0 +1,7 @@
+[template]
+src = "archivesspace.config.rb.tmpl"
+dest = "/archivesspace/config/config.rb"
+uid = 0
+gid = 0
+mode = "0640"
+keys = [ "/" ]

@@ -1,0 +1,72 @@
+# Solr 9
+
+Docker image for [solr] version 9.10.1.
+
+Built from [lehigh-university-libraries/buildkit solr9](https://github.com/lehigh-university-libraries/buildkit/tree/main/images/solr9)
+
+Please refer to the [Solr Documentation] for more in-depth information.
+
+As a quick example this will bring up an instance of [solr], and allow you
+to view on <http://localhost:8983/solr/>.
+
+```bash
+docker run --rm -ti -p 8983:8983 lehighlts/solr
+```
+
+## Dependencies
+
+Requires `lehighlts/java:17` Docker image to build. Please refer to the
+[Java 17 Image README](../java17/README.md) for additional information including
+additional settings, volumes, ports, etc.
+
+## Settings
+
+| Environment Variable | Default                                 | Description                                                                    |
+| :------------------- | :-------------------------------------- | :----------------------------------------------------------------------------- |
+| SOLR_JAVA_OPTS       |                                         | Additional parameters to pass to the JVM when starting Solr                    |
+| SOLR_JETTY_OPTS      | `-Dsolr.jetty.host=0.0.0.0`.            | Additional parameters to pass to Jetty when starting Solr.                     |
+| SOLR_LOG_LEVEL       | `INFO`                                  | Log level. Possible Values: OFF, FATAL, ERROR, WARN, INFO, DEBUG, TRACE or ALL |
+| SOLR_MEMORY          | `512m`                                  | Sets the min (-Xms) and max (-Xmx) heap size for the JVM                       |
+| SOLR_MODULES         | `analysis-extras,extraction,langid,ltr` | Solr modules to enable                                                         |
+
+## Ports
+
+| Port | Description |
+| :--- | :---------- |
+| 8983 | HTTP        |
+
+## Volumes
+
+| Path                  | Description                                      |
+| :-------------------- | :----------------------------------------------- |
+| /opt/solr/server/solr | Location of configuration and data for all cores |
+
+## Solr 10 Readiness
+
+The `dbmdz/solr-ocrhighlighting` plugin is shipped as a regular jar in
+`/opt/solr/lib`, not as a Solr module. This is intentional: `SOLR_MODULES`
+only supports built-in Solr modules, and Solr 10 removes the old
+`<lib ... />` config path that was previously used for loading arbitrary jars.
+
+If you set `SOLR_MODULES`, only include actual Solr module names such as
+`extraction` or `ltr`. Do not include `ocrhighlighting`.
+
+## Logs
+
+- [Solr Logging]
+
+## Updating
+
+You can change the version used for [solr] by modifying the build argument
+`SOFTWARE_VERSION` and `SOLR_FILE_SHA256` in the `Dockerfile`.
+
+Change `SOFTWARE_VERSION` and then generate the `SOLR_FILE_SHA256` with the following
+commands:
+
+```bash
+./ci/update-sha.sh apache-solr9 OLD_VERSION NEW_VERSION ''
+```
+
+[Solr Documentation]: https://lucene.apache.org/solr/guide/7_1/
+[Solr Logging]: https://lucene.apache.org/solr/guide/7_1/configuring-logging.html
+[solr]: https://lucene.apache.org/solr/
