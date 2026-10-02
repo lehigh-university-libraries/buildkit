@@ -1,0 +1,8 @@
+[template]
+src = "db.ini.tmpl"
+dest = "/var/www/omeka-classic/db.ini"
+uid = 100
+gid = 1000
+mode = "0640"
+keys = [ "/" ]
+

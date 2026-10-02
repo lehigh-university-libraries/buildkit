@@ -1,0 +1,22 @@
+---
+# Common to all services
+x-common: &common
+  restart: "no"
+
+name: php84-servicestartswithdefaults
+services:
+  php84:
+    <<: *common
+    image: ${PHP84:-lehighlts/php:local-8.4}
+    command:
+      - bash
+      - -lc
+      - |
+        set -e
+        s6-svwait -U /run/service/fpm
+        test -S /run/php-fpm/php-fpm.sock
+        command -v php
+        php -v
+        composer --version
+        grep -qx 1 /run/s6/container_environment/COMPOSER_ALLOW_SUPERUSER
+        grep -qx -- -1 /run/s6/container_environment/COMPOSER_MEMORY_LIMIT

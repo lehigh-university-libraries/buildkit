@@ -1,0 +1,42 @@
+{{- define "sqlEscape" -}}{{- $escaped := replace . "\\" "\\\\" -1 -}}{{- replace $escaped "'" "\\'" -1 -}}{{- end -}}
+<?php
+
+{{ $ingressHostnames := replace (getenv "INGRESS_HOSTNAMES") " " "" -1 }}
+{{ $ingressHostname := index (split $ingressHostnames ",") 0 }}
+{{ $wpHome := printf "%s://%s" (getenv "INGRESS_SCHEME") $ingressHostname }}
+{{ $wpSiteURL := printf "%s/wp" $wpHome }}
+{{ $dbHost := printf "%s:%s" (getenv "DB_HOST") (getenv "DB_PORT") }}
+{{ $wpEnv := getenv "WP_ENV" }}
+define('WP_ENV', '{{ template "sqlEscape" $wpEnv }}');
+define('WP_HOME', '{{ template "sqlEscape" $wpHome }}');
+define('WP_SITEURL', '{{ template "sqlEscape" $wpSiteURL }}');
+
+{{ $dbName := getenv "DB_NAME" }}
+{{ $dbUser := getenv "DB_USER" }}
+{{ $dbPassword := getenv "DB_PASSWORD" }}
+define('DB_NAME', '{{ template "sqlEscape" $dbName }}');
+define('DB_USER', '{{ template "sqlEscape" $dbUser }}');
+define('DB_PASSWORD', '{{ template "sqlEscape" $dbPassword }}');
+define('DB_HOST', '{{ template "sqlEscape" $dbHost }}');
+define('DB_CHARSET', 'utf8mb4');
+define('DB_COLLATE', '');
+
+{{ $tablePrefix := getenv "WORDPRESS_TABLE_PREFIX" }}
+$table_prefix = '{{ template "sqlEscape" $tablePrefix }}';
+
+{{ $authKey := getenv "WORDPRESS_AUTH_KEY" }}
+{{ $secureAuthKey := getenv "WORDPRESS_SECURE_AUTH_KEY" }}
+{{ $loggedInKey := getenv "WORDPRESS_LOGGED_IN_KEY" }}
+{{ $nonceKey := getenv "WORDPRESS_NONCE_KEY" }}
+{{ $authSalt := getenv "WORDPRESS_AUTH_SALT" }}
+{{ $secureAuthSalt := getenv "WORDPRESS_SECURE_AUTH_SALT" }}
+{{ $loggedInSalt := getenv "WORDPRESS_LOGGED_IN_SALT" }}
+{{ $nonceSalt := getenv "WORDPRESS_NONCE_SALT" }}
+define('AUTH_KEY', '{{ template "sqlEscape" $authKey }}');
+define('SECURE_AUTH_KEY', '{{ template "sqlEscape" $secureAuthKey }}');
+define('LOGGED_IN_KEY', '{{ template "sqlEscape" $loggedInKey }}');
+define('NONCE_KEY', '{{ template "sqlEscape" $nonceKey }}');
+define('AUTH_SALT', '{{ template "sqlEscape" $authSalt }}');
+define('SECURE_AUTH_SALT', '{{ template "sqlEscape" $secureAuthSalt }}');
+define('LOGGED_IN_SALT', '{{ template "sqlEscape" $loggedInSalt }}');
+define('NONCE_SALT', '{{ template "sqlEscape" $nonceSalt }}');

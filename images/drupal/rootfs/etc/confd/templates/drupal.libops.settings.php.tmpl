@@ -1,0 +1,71 @@
+{{- define "sqlEscape" -}}{{- $escaped := replace . "\\" "\\\\" -1 -}}{{- replace $escaped "'" "\\'" -1 -}}{{- end -}}
+<?php
+
+{{ $dbHost := getenv "DB_HOST" }}
+{{ $dbName := getenv "DB_NAME" }}
+{{ $dbPassword := getenv "DB_PASSWORD" }}
+{{ $dbPort := getenv "DB_PORT" }}
+{{ $dbUser := getenv "DB_USER" }}
+{{ $hashSalt := getenv "DRUPAL_DEFAULT_SALT" }}
+{{ $solrHost := getenv "DRUPAL_DEFAULT_SOLR_HOST" }}
+{{ $solrPort := getenv "DRUPAL_DEFAULT_SOLR_PORT" }}
+{{ $solrCore := getenv "DRUPAL_DEFAULT_SOLR_CORE" }}
+{{ $smtpHost := getenv "LIBOPS_SMTP_HOST" }}
+{{ $smtpPort := getenv "LIBOPS_SMTP_PORT" }}
+{{ $ingressHostnames := replace (getenv "INGRESS_HOSTNAMES") " " "" -1 }}
+$settings['hash_salt'] = '{{ template "sqlEscape" $hashSalt }}';
+$settings['trusted_host_patterns'] = [
+  '^localhost$',
+{{ range $hostname := split $ingressHostnames "," -}}
+{{ if ne $hostname "" -}}
+{{ $pattern := printf "^%s$" (replace $hostname "." "\\." -1) -}}
+  '{{ template "sqlEscape" $pattern }}',
+{{ end -}}
+{{ end -}}
+];
+
+$databases['default']['default'] = [
+  'database' => '{{ template "sqlEscape" $dbName }}',
+  'username' => '{{ template "sqlEscape" $dbUser }}',
+  'password' => '{{ template "sqlEscape" $dbPassword }}',
+  'host' => '{{ template "sqlEscape" $dbHost }}',
+  'port' => '{{ template "sqlEscape" $dbPort }}',
+  'prefix' => '',
+  'driver' => 'mysql',
+  'namespace' => 'Drupal\\Core\\Database\\Driver\\mysql',
+];
+
+$config['search_api.server.default_solr_server']['backend_config']['connector_config']['host'] = '{{ template "sqlEscape" $solrHost }}';
+$config['search_api.server.default_solr_server']['backend_config']['connector_config']['port'] = '{{ template "sqlEscape" $solrPort }}';
+$config['search_api.server.default_solr_server']['backend_config']['connector_config']['core'] = '{{ template "sqlEscape" $solrCore }}';
+
+$config['system.mail']['interface']['default'] = 'symfony_mailer';
+$config['system.mail']['mailer_dsn'] = [
+  'scheme' => 'smtp',
+  'host' => '{{ template "sqlEscape" $smtpHost }}',
+  'user' => NULL,
+  'password' => NULL,
+  'port' => (int) '{{ $smtpPort }}',
+  'options' => [],
+];
+
+{{ if ne (getenv "DRUPAL_DEFAULT_BROKER_URL") "" -}}
+{{ $brokerURL := getenv "DRUPAL_DEFAULT_BROKER_URL" }}
+{{ $brokerUser := getenv "DRUPAL_DEFAULT_BROKER_USER" }}
+{{ $brokerPassword := getenv "DRUPAL_DEFAULT_BROKER_PASSWORD" }}
+$config['islandora.settings']['broker_url'] = '{{ template "sqlEscape" $brokerURL }}';
+$config['islandora.settings']['broker_user'] = '{{ template "sqlEscape" $brokerUser }}';
+$config['islandora.settings']['broker_password'] = '{{ template "sqlEscape" $brokerPassword }}';
+{{ end -}}
+{{ if ne (getenv "DRUPAL_DEFAULT_CANTALOUPE_URL") "" -}}
+{{ $cantaloupeURL := getenv "DRUPAL_DEFAULT_CANTALOUPE_URL" }}
+$config['islandora_iiif.settings']['iiif_server'] = '{{ template "sqlEscape" $cantaloupeURL }}';
+$config['openseadragon.settings']['iiif_server'] = '{{ template "sqlEscape" $cantaloupeURL }}';
+{{ end -}}
+{{ if ne (getenv "DRUPAL_DEFAULT_FCREPO_URL") "" -}}
+{{ $fcrepoURL := getenv "DRUPAL_DEFAULT_FCREPO_URL" }}
+$settings['flysystem']['fedora']['driver'] = 'fedora';
+$settings['flysystem']['fedora']['config']['root'] = '{{ template "sqlEscape" $fcrepoURL }}';
+{{ end -}}
+
+$config['key.key.islandora_rsa_key']['key_provider_settings']['file_location'] = '/opt/keys/jwt/private.key';

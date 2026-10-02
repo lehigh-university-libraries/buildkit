@@ -1,0 +1,10 @@
+---
+# Common to all services
+x-common: &common
+  restart: "no"
+
+name: base-servicestartswithdefaults
+services:
+  base:
+    <<: *common
+    image: ${BASE:-lehighlts/base:local}

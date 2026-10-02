@@ -1,0 +1,10 @@
+--- a/lib/pkp/classes/cliTool/InstallTool.php
++++ b/lib/pkp/classes/cliTool/InstallTool.php
+@@ -108,6 +108,7 @@
+         $this->printTitle('installer.databaseSettings');
+         $this->readParamOptions('databaseDriver', 'installer.databaseDriver', $installForm->getDatabaseDriversOptions());
+         $this->readParam('databaseHost', 'installer.databaseHost', '');
++        $this->params['databasePort'] = getenv('DB_PORT') ?: 3306;
+         $this->readParam('databaseUsername', 'installer.databaseUsername', '');
+         $this->readParam('databasePassword', 'installer.databasePassword', '');
+         $this->readParam('databaseName', 'installer.databaseName');

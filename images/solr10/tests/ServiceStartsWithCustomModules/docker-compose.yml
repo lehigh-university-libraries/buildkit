@@ -1,0 +1,16 @@
+---
+# Common to all services
+x-common: &common
+  restart: "no"
+
+name: solr10-servicestartswithcustommodules
+services:
+  solr:
+    <<: *common
+    image: ${SOLR10:-lehighlts/solr:local-10}
+    environment:
+      SOLR_MODULES: extraction
+    volumes:
+      - ./test.sh:/test.sh # Test to run.
+    command:
+      - /test.sh # Run test and exit.

@@ -1,0 +1,5 @@
+---
+name: archivesspace-solr-servicestartswithdefaults
+services:
+  solr:
+    image: ${ARCHIVESSPACE_SOLR:-lehighlts/archivesspace-solr:local}

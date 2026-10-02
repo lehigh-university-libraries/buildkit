@@ -1,0 +1,5 @@
+allowedMimeTypes:
+  - "image/*"
+cmdByMimeType:
+  default:
+    cmd: /app/cmd.sh

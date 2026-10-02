@@ -1,0 +1,9 @@
+---
+name: wp-servicehealthcheck
+services:
+  wp:
+    image: ${WP:-lehighlts/wp:local-php83}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - touch /installed && exec /init

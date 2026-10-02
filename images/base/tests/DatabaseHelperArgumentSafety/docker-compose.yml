@@ -1,0 +1,9 @@
+---
+name: base-databasehelperargumentsafety
+services:
+  base:
+    image: ${BASE:-lehighlts/base:local}
+    volumes:
+      - ./test.sh:/test.sh:ro
+    command:
+      - /test.sh
