@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.20.0
+# syntax=docker/dockerfile:1.27.1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
 ARG DRUPAL_BASE=drupal
 FROM ${DRUPAL_BASE}
 
@@ -25,7 +25,7 @@ RUN PHP_PACKAGE="php$(php -r 'echo PHP_MAJOR_VERSION . PHP_MINOR_VERSION;')" && 
 ARG \
   TARGETARCH \
   # renovate: datasource=github-releases depName=crosswalk packageName=lehigh-university-libraries/crosswalk
-  CROSSWALK_VERSION=0.3.9 \
+  CROSSWALK_VERSION=0.6.0 \
   CROSSWALK_BASE_URL="https://github.com/lehigh-university-libraries/crosswalk/releases/download/v${CROSSWALK_VERSION}" \
   CROSSWALK_AMD64=crosswalk_Linux_x86_64.tar.gz   \
   CROSSWALK_AMD64_SHA256="77b29f8f34c030d6b52194b7d9dcb41b087810a984be43f8c9615316658ef2fe" \
