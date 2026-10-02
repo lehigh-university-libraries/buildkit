@@ -1,0 +1,17 @@
+# file: docker-compose.yml
+#
+# Tests that when a service exits, it's exit code is used as the return exit code for the container.
+
+x-common: &common
+  restart: "no"
+
+name: base-sigtermexitcode
+services:
+  base:
+    <<: *common
+    image: ${BASE:-lehighlts/base:local}
+    volumes:
+      - ./service:/etc/services.d/test
+      - ./test.sh:/test.sh # Test to run.
+    command:
+      - /test.sh # Run test and exit.

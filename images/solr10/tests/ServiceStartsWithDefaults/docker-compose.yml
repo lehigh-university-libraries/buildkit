@@ -1,0 +1,14 @@
+---
+# Common to all services
+x-common: &common
+  restart: "no"
+
+name: solr10-servicestartswithdefaults
+services:
+  solr:
+    <<: *common
+    image: ${SOLR10:-lehighlts/solr:local-10}
+    volumes:
+      - ./test.sh:/test.sh # Test to run.
+    command:
+      - /test.sh # Run test and exit.

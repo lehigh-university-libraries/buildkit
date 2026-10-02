@@ -1,0 +1,15 @@
+#!/command/with-contenv bash
+# shellcheck shell=bash
+
+DIRS=(
+  /app
+)
+echo "Setting pyapp permissions..."
+for DIR in "${DIRS[@]}"; do
+  echo "Setting permissions on $DIR"
+  chown -R pyapp:pyapp "$DIR"
+  find "$DIR" -type d -exec chmod 750 {} \;
+  find "$DIR" -type f -exec chmod 640 {} \;
+done
+echo "pyapp permissions set: dirs=750, files=640"
+

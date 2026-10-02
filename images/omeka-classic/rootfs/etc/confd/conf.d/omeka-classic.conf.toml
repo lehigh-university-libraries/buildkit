@@ -1,0 +1,8 @@
+[template]
+src = "omeka-classic.conf.tmpl"
+dest = "/etc/nginx/shared/omeka-classic.conf"
+uid = 0
+gid = 0
+mode = "0644"
+keys = [ "/" ]
+

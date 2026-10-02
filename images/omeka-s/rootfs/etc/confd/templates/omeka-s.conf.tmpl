@@ -1,0 +1,33 @@
+root /var/www/omeka-s;
+index index.php;
+
+error_log /dev/stderr;
+access_log /dev/stdout combined;
+
+location / {
+    try_files $uri $uri/ /index.php?$args;
+}
+
+location = /index.php {
+    try_files $uri =404;
+    fastcgi_pass unix:{{ getenv "PHP_FPM_SOCKET" }};
+    fastcgi_index index.php;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    {{ if eq (getenv "INGRESS_SCHEME") "https" }}
+    fastcgi_param HTTPS on;
+    fastcgi_param HTTP_SCHEME https;
+    {{ end }}
+    include fastcgi_params;
+}
+
+location ~ \.php(?:/|$) {
+    return 404;
+}
+
+location ~* \.ini$ {
+    deny all;
+}
+
+location ~ /\. {
+    deny all;
+}

@@ -1,0 +1,38 @@
+FROM leptonica
+FROM scyllaridae
+
+ARG TARGETARCH
+
+EXPOSE 8080
+
+WORKDIR /app
+
+ARG \
+  # renovate: datasource=repology depName=alpine_3_24/tesseract-ocr
+  TESSERACT_VERSION=5.5.2-r0 \
+  # renovate: datasource=repology depName=alpine_3_24/ghostscript
+  GHOSTSCRIPT_VERSION=10.07.1-r0
+
+RUN --mount=type=bind,from=leptonica,source=/packages,target=/packages \
+    --mount=type=bind,from=leptonica,source=/etc/apk/keys,target=/etc/apk/keys \
+    apk update && \
+    apk add --no-cache \
+        /packages/leptonica-*.apk \
+        ghostscript=="${GHOSTSCRIPT_VERSION}" \
+        tesseract-ocr=="${TESSERACT_VERSION}" \
+        tesseract-ocr-data-eng=="${TESSERACT_VERSION}" \
+        tesseract-ocr-data-fra=="${TESSERACT_VERSION}" \
+        tesseract-ocr-data-spa=="${TESSERACT_VERSION}" \
+        tesseract-ocr-data-ita=="${TESSERACT_VERSION}" \
+        tesseract-ocr-data-por=="${TESSERACT_VERSION}" \
+        tesseract-ocr-data-hin=="${TESSERACT_VERSION}" \
+        tesseract-ocr-data-deu=="${TESSERACT_VERSION}" \
+        tesseract-ocr-data-jpn=="${TESSERACT_VERSION}" \
+        tesseract-ocr-data-rus=="${TESSERACT_VERSION}"
+
+ENV \
+  MAX_THREADS=5 \
+  MAX_WIDTH=2000 \
+  URI_SCHEME="private"
+
+COPY --link rootfs /

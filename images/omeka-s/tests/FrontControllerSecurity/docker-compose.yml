@@ -1,0 +1,24 @@
+---
+name: omeka-s-frontcontrollersecurity
+services:
+  omeka-s:
+    image: ${OMEKA_S:-lehighlts/omeka-s:local-php83}
+    environment:
+      DB_PASSWORD: test-database-password
+      OMEKA_S_ADMIN_EMAIL: admin@example.com
+      OMEKA_S_ADMIN_NAME: Administrator
+      OMEKA_S_ADMIN_PASSWORD: test-admin-password
+    volumes:
+      - ./test.sh:/test.sh:ro
+    command:
+      - /test.sh
+    depends_on:
+      mariadb:
+        condition: service_healthy
+  mariadb:
+    image: ${MARIADB11:-lehighlts/mariadb:local-11}
+    environment:
+      DB_ROOT_PASSWORD: test-root-password
+      DB_NAME: omeka_s
+      DB_USER: omeka_s
+      DB_PASSWORD: test-database-password

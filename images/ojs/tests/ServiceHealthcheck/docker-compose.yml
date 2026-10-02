@@ -1,0 +1,26 @@
+---
+name: ojs-servicehealthcheck
+services:
+  ojs:
+    image: ${OJS:-lehighlts/ojs:local-php83}
+    environment:
+      DB_HOST: database
+      DB_PASSWORD: 'p"a\ss''word&+='
+      OJS_SALT: test-salt
+      OJS_API_KEY_SECRET: test-api-key-secret
+      OJS_SECRET_KEY: base64:MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE=
+      OJS_ADMIN_PASSWORD: 'Adm&in+=p@ss'
+    depends_on:
+      mariadb:
+        condition: service_healthy
+  mariadb:
+    image: ${MARIADB11:-lehighlts/mariadb:local-11}
+    environment:
+      DB_ROOT_PASSWORD: root
+      DB_NAME: ojs
+      DB_USER: ojs
+      DB_PASSWORD: 'p"a\ss''word&+='
+    networks:
+      default:
+        aliases:
+          - database

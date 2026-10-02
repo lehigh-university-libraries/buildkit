@@ -1,0 +1,237 @@
+{
+  branchPrefix: "renovate.",
+  extends: [
+    "config:best-practices",
+    ":rebaseStalePrs",
+  ],
+  enabledManagers: [
+    "custom.regex",
+    "github-actions",
+    "dockerfile"
+  ],
+  ignorePaths: [
+    "**/node_modules/**",
+    "**/bower_components/**",
+    "**/vendor/**",
+    "**/examples/**",
+    "**/__tests__/**",
+    "**/tests/**",
+    "**/__fixtures__/**"
+  ],
+  packageRules: [
+    {
+      matchManagers: ["dockerfile"],
+      matchPackageNames: ["python"],
+      matchFileNames: ["images/python3-13/Dockerfile"],
+      allowedVersions: "/^3\\.13([.-]|$)/",
+    },
+    {
+      matchManagers: ["dockerfile"],
+      matchPackageNames: ["python"],
+      matchFileNames: ["images/python3-14/Dockerfile"],
+      allowedVersions: "/^3\\.14([.-]|$)/",
+    },
+    {
+      matchDepNames: ["gha-runner", "crosswalk"],
+      extractVersion: "^v?(?<version>\\d+\\.\\d+\\.\\d+)$",
+    },
+    {
+      matchManagers: ["dockerfile"],
+      matchPackageNames: ["ghcr.io/ggml-org/whisper.cpp"],
+      enabled: false,
+    },
+    {
+      matchManagers: [
+        "custom.regex",
+      ],
+      matchDatasources: [
+        "*",
+      ],
+      allowedVersions: "/^v?\\d+\\.\\d+\\.\\d+$/",
+    },
+    {
+      matchDepNames: [
+        "apache-solr9",
+      ],
+      allowedVersions: "/^9\\./",
+    },
+    {
+      matchDepNames: [
+        "apache-solr10",
+      ],
+      allowedVersions: "/^10\\./",
+    },
+    {
+      matchDepNames: [
+        "apache-tomcat9",
+      ],
+      allowedVersions: "/^9\\./",
+    },
+    {
+      matchDepNames: [
+        "apache-tomcat11",
+      ],
+      allowedVersions: "/^11\\./",
+    },
+    {
+      matchDepNames: [
+        "ojs",
+      ],
+      allowedVersions: "/^\\d+\\.\\d+\\.\\d+-\\d+$/",
+    },
+    {
+      matchDepNames: [
+        "omeka-classic",
+      ],
+      allowedVersions: "/^\\d+\\.\\d+(?:\\.\\d+)?$/",
+    },
+    {
+      matchDatasources: [
+        "repology"
+      ],
+      versioning: "loose",
+      // Distribution revisions are valid; the generic x.y.z filter is not.
+      allowedVersions: null,
+    },
+    {
+      matchDatasources: ["repology"],
+      matchPackageNames: ["/^(ubuntu|debian)_/"],
+      versioning: "deb",
+    },
+    {
+      groupName: "apk-packages",
+      matchDatasources: [
+        "repology"
+      ],
+      matchUpdateTypes: [
+        "minor",
+        "patch",
+        "digest"
+      ],
+      automerge: true,
+      automergeType: "pr",
+      minimumReleaseAge: null,
+      schedule: [],
+    },
+    {
+      extractVersion: "^v(?<version>\\d+\\.\\d+\\.\\d+\\.\\d+)$",
+      versioning: "regex:^(?:v)?(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)\\.(?<build>\\d+)?$",
+      matchPackageNames: [
+        "/^just-containers/s6-overlay$/",
+      ],
+    },
+    {
+      matchUpdateTypes: [
+        "major",
+      ],
+      groupName: null,
+      prConcurrentLimit: 1,
+    },
+    {
+      groupName: "all non-major dependencies",
+      matchDatasources: [
+        "!repology",
+      ],
+      matchUpdateTypes: [
+        "minor",
+        "patch",
+        "digest"
+      ],
+      schedule: [
+        "* * * * 3",
+      ],
+    },
+    {
+      matchDepTypes: [
+        "action",
+      ],
+      groupName: "github-actions",
+      commitMessagePrefix: "[skip-release] ",
+    },
+    {
+      matchDepNames: [
+        "alpine-pkg-glibc",
+        "apache-solr9",
+        "apache-solr10",
+        "archivesspace",
+        "apache-tomcat9",
+        "apache-tomcat11",
+        "cli11",
+        "custom-composer",
+        "gha-runner",
+        "crosswalk",
+        "islandora-workbench",
+        "drupal-recommended-project",
+        "golang",
+        "islandora-starter-site",
+        "mysql-connector-j",
+        "ojs",
+        "omeka-classic",
+        "omeka-s",
+        "s6-overlay",
+        "solr-ocrhighlighting",
+        "scyllaridae",
+      ],
+      postUpgradeTasks: {
+        commands: [
+          "bash ci/update-sha.sh \"{{{depName}}}\" \"{{{currentVersion}}}\" \"{{{newVersion}}}\" \"{{{newDigest}}}\""
+        ],
+      },
+    },
+    {
+      matchDepNames: ["islandora-workbench"],
+      allowedVersions: null,
+    },
+  ],
+  customManagers: [
+    {
+      customType: "regex",
+      description: "Update the digest-pinned BuildKit daemon image",
+      managerFilePatterns: [
+        "/^\\.github/workflows/build\\.yml$/",
+      ],
+      matchStrings: [
+        "# renovate: datasource=(?<datasource>docker) depName=(?<depName>moby/buildkit)\\s+BUILDKIT_IMAGE: moby/buildkit:(?<currentValue>[^@\\s]+)@(?<currentDigest>sha256:[a-f0-9]{64})",
+      ],
+      versioningTemplate: "docker",
+    },
+    {
+      customType: "regex",
+      description: "Update (COMMIT|_VERSION) variables in Dockerfiles",
+      managerFilePatterns: [
+        "/(^|/|\\.)Dockerfile$/",
+        "/(^|/)Dockerfile\\.[^/]*$/",
+        "/(^|/|\\.)utilities\\.sh$/",
+      ],
+      matchStrings: [
+        "([ ]+)?# renovate: datasource=(?<datasource>[a-z-\\.]+?) depName=(?<depName>.+?)(?: packageName=(?<packageName>.+?))?(?: versioning=(?<versioning>[a-z-]+?))?\\s(?:ENV|ARG)? .+?_VERSION=[\"']?(?<currentValue>[^\\s\"'\\\\]+)[\"']?(\\s|$)",
+        "# renovate: datasource=(?<datasource>[a-z-\\.]+?) depName=(?<depName>.+?) packageName=(?<packageName>.+?) branch=(?<currentValue>.+?)\\s(?:ENV|ARG) COMMIT=(?<currentDigest>.+?)(\\s|$)",
+      ],
+      versioningTemplate: "{{#if versioning}}{{{versioning}}}{{else}}loose{{/if}}",
+    },
+  ],
+  customDatasources: {
+    "apache-downloads": {
+      defaultRegistryUrlTemplate: "https://downloads.apache.org/{{ packageName }}/",
+      format: "html",
+      transformTemplates: [
+        "{ \"releases\": [ $map($filter(releases.version, function($v, $i, $a) { $match($v, /^v?\\d+\\.\\d+\\.\\d+\\/?$/) }), function($v, $i, $a) { { \"version\": $match($v, /\\d+\\.\\d+\\.\\d+/).match } }) ] }",
+      ],
+    },
+    "ojs": {
+      defaultRegistryUrlTemplate: "https://pkp.sfu.ca/software/ojs/download/",
+      format: "html",
+      transformTemplates: [
+        "{ \"releases\": [ $map($filter(releases.version, function($v, $i, $a) { $match($v, /ojs-\\d+\\.\\d+\\.\\d+-\\d+\\.tar\\.gz/) }), function($v, $i, $a) { { \"version\": $replace($replace($match($v, /ojs-\\d+\\.\\d+\\.\\d+-\\d+\\.tar\\.gz/).match, /^ojs-/, \"\"), /\\.tar\\.gz$/, \"\") } }) ] }",
+      ],
+    },
+  },
+  labels: [
+    "dependencies",
+  ],
+  osvVulnerabilityAlerts: true,
+  dependencyDashboardOSVVulnerabilitySummary: "unresolved",
+  vulnerabilityAlerts: {
+    enabled: true,
+  },
+}

@@ -1,0 +1,46 @@
+name: run renovate
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  schedule:
+    - cron: "15 10 * * *"
+
+jobs:
+  run:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
+        with:
+          app-id: ${{ secrets.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIV_KEY }}
+
+      - name: run renovate
+        env:
+          BASE_BRANCH: ${{ github.event_name == 'schedule' && 'main' || github.ref_name }}
+          RENOVATE_REPOSITORIES: ${{ github.repository }}
+          RENOVATE_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          # run renovate with our token
+          # using branch set in workflow dispatch to allow testing PRs
+          # see https://docs.renovatebot.com/configuration-options/#basebranches
+          export RENOVATE_BASE_BRANCHES=$(jq -c -n --arg branch "$BASE_BRANCH" '[$branch]')
+          echo "Running renovate against ${RENOVATE_BASE_BRANCHES}"
+          docker run \
+            --env LOG_LEVEL=debug \
+            --env RENOVATE_ALLOWED_COMMANDS='["^bash ci/update-sha.sh .*$"]' \
+            --env RENOVATE_PLATFORM=github \
+            --env RENOVATE_REPOSITORIES \
+            --env RENOVATE_BASE_BRANCHES \
+            --env RENOVATE_TOKEN \
+            --rm \
+            -v $(pwd):/usr/src/app \
+            renovate/renovate

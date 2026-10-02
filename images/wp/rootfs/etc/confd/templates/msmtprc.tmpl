@@ -1,0 +1,13 @@
+defaults
+auth off
+tls off
+syslog on
+
+account default
+host {{ getenv "LIBOPS_SMTP_HOST" }}
+port {{ getenv "LIBOPS_SMTP_PORT" }}
+{{- if ne (getenv "SMTP_FROM") "" }}
+from {{ getenv "SMTP_FROM" }}
+{{- else }}
+from info@{{ replace (index (split (getenv "INGRESS_HOSTNAMES") ",") 0) "www." "" -1 }}
+{{- end }}
