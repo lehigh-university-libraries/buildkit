@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -e
+
+# Ensures composer does not run out of memory. Not run as nginx as there is no
+# actual user with that account, and we want to make use of the cache in the
+# root users $HOME directory.
+# Takes precedence due to order of $PATH. Preferred to an alias as it will apply
+# regardless of which shell is used or how it is started (login, interactive, etc)
+if ! command -v php >/dev/null 2>&1; then
+    echo "composer requires the php binary to exist in PATH" >&2
+    exit 127
+fi
+
+exec php -d memory_limit=-1 /usr/bin/composer "${@}"

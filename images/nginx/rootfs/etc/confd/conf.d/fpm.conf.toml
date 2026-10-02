@@ -1,0 +1,7 @@
+[template]
+src = "fpm.conf.tmpl"
+dest = "/etc/nginx/shared/fpm.conf"
+uid = 0
+gid = 0
+mode = "0644"
+keys = [ "/" ]

@@ -1,0 +1,10 @@
+{{- define "xmlAttributeEscape" -}}{{- $ampersands := replace . "&" "&amp;" -1 -}}{{- $quotes := replace $ampersands "\"" "&quot;" -1 -}}{{- $lessThan := replace $quotes "<" "&lt;" -1 -}}{{- replace $lessThan ">" "&gt;" -1 -}}{{- end -}}
+<?xml version="1.0" encoding="UTF-8"?>
+<tomcat-users xmlns="http://tomcat.apache.org/xml"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://tomcat.apache.org/xml tomcat-users.xsd"
+              version="1.0">
+  {{ if getenv "TOMCAT_ADMIN_PASSWORD" }}<user username="{{ template "xmlAttributeEscape" (getenv "TOMCAT_ADMIN_NAME") }}" password="{{ template "xmlAttributeEscape" (getenv "TOMCAT_ADMIN_PASSWORD") }}" roles="{{ template "xmlAttributeEscape" (getenv "TOMCAT_ADMIN_ROLES") }}" />{{ end }}
+  {{ range $dir := lsdir "/tomcat/user" }}<user username="{{ template "xmlAttributeEscape" (getv (printf "/tomcat/user/%s/name" $dir)) }}" password="{{ template "xmlAttributeEscape" (getv (printf "/tomcat/user/%s/password" $dir)) }}" roles="{{ template "xmlAttributeEscape" (getv (printf "/tomcat/user/%s/roles" $dir)) }}" />
+  {{ end }}
+</tomcat-users>

@@ -1,0 +1,5 @@
+#!/command/execlineb -P
+
+with-contenv
+unexport DB_ROOT_PASSWORD
+exec s6-setuidgid scyllaridae /app/scyllaridae

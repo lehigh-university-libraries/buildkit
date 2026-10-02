@@ -1,0 +1,16 @@
+---
+# Common to all services
+x-common: &common
+  restart: "no"
+
+name: mariadb11-servicehealthcheck
+services:
+  mariadb:
+    <<: *common
+    image: ${MARIADB11:-lehighlts/mariadb:local-11}
+    environment:
+      DB_ROOT_PASSWORD: root
+    volumes:
+      - ./test.sh:/test.sh # Test to run.
+    command:
+      - /test.sh # Run test and exit.

@@ -1,0 +1,7 @@
+---
+name: mariadb11-rejectsemptyrootpassword
+services:
+  mariadb:
+    image: ${MARIADB11:-lehighlts/mariadb:local-11}
+    environment:
+      DB_ROOT_PASSWORD: ""

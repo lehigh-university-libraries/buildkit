@@ -1,0 +1,251 @@
+name: Build
+
+on:
+  workflow_call:
+    inputs:
+      repository:
+        required: true
+        type: string
+      image:
+        required: true
+        type: string
+      fallback-tag:
+        required: true
+        type: string
+      version-tags:
+        required: false
+        type: boolean
+        default: false
+      build-images:
+        description: "JSON list of images available under the fallback tag"
+        required: false
+        type: string
+        default: "[]"
+    outputs:
+      digest:
+        value: ${{ jobs.merge.outputs.digest }}
+      context:
+        description: "Context to use in dependent images"
+        value: ${{ jobs.merge.outputs.context }}
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+jobs:
+  build:
+    env:
+      # renovate: datasource=docker depName=moby/buildkit
+      BUILDKIT_IMAGE: moby/buildkit:v0.33.0@sha256:6c2fa84a6b61ccd72899dde4239f8d5717f05f9a8ca6f3cad185fb1a95a94de3
+    strategy:
+      matrix:
+        runner: ${{ fromJSON(inputs.image == 'scyllaridae-whisper' && '["ubuntu-24.04"]' || '["ubuntu-24.04", "ubuntu-24.04-arm"]') }}
+    name: build-${{ matrix.runner }}
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout
+        uses: "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803" # v6
+
+      - name: Validate repository
+        run: |
+          set -euo pipefail
+          set -x
+          case "${{ inputs.repository }}" in
+            lehighlts|ghcr.io/lehigh-university-libraries)
+              exit 0
+              ;;
+          esac
+
+          exit 1
+
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version-file: go.mod
+
+      - id: metadata
+        name: Image metadata
+        run: |
+          set -euo pipefail
+
+          MODE="fallback"
+          if [ "${{ inputs.version-tags }}" = "true" ]; then
+            MODE="version"
+          fi
+
+          TAGS="$(./ci/image-metadata.sh tags "${{ inputs.image }}" "$MODE" "${{ inputs.fallback-tag }}")"
+          FIRST_TAG="$(./ci/image-metadata.sh first-tag "${{ inputs.image }}" "$MODE" "${{ inputs.fallback-tag }}")"
+          CONTEXTS="$(./ci/image-metadata.sh contexts "${{ inputs.image }}" "${{ inputs.repository }}" "$MODE" "${{ inputs.fallback-tag }}" '${{ inputs.build-images }}')"
+          PUBLISHED_IMAGE="$(./ci/image-metadata.sh published-image "${{ inputs.image }}")"
+
+          echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
+          echo "first-tag=${FIRST_TAG}" >> "$GITHUB_OUTPUT"
+          echo "contexts=${CONTEXTS}" >> "$GITHUB_OUTPUT"
+          echo "published-image=${PUBLISHED_IMAGE}" >> "$GITHUB_OUTPUT"
+
+      - name: Docker login
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        env:
+          DOCKERHUB_OIDC_CONNECTIONID: aad87001-a8d7-4dd6-96ba-46ae47c311d2
+          DOCKERHUB_OIDC_EXPIREIN: 3600
+        with:
+          username: lehighlts
+
+      - name: Pull BuildKit image
+        run: |
+          set -euo pipefail
+
+          retry_with_backoff() {
+            local max_attempts=5
+            local attempt=1
+            local delay=15
+            while true; do
+              if "$@"; then
+                return 0
+              fi
+              if [ "$attempt" -ge "$max_attempts" ]; then
+                echo "Command failed after $max_attempts attempts"
+                return 1
+              fi
+              echo "Attempt $attempt failed, retrying in ${delay}s..."
+              sleep "$delay"
+              attempt=$((attempt + 1))
+              delay=$((delay * 2))
+            done
+          }
+
+          retry_with_backoff docker pull "${BUILDKIT_IMAGE}"
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
+        with:
+          driver-opts: |
+            image=${{ env.BUILDKIT_IMAGE }}
+            network=host
+
+      - id: build
+        name: Build and push
+        run: |
+          set -ex
+          PLATFORM="amd64"
+          if [ "${{ matrix.runner }}" = "ubuntu-24.04-arm" ]; then
+            PLATFORM="arm64"
+          fi
+          make push \
+            "PROGRESS=plain" \
+            "BUILDER=${{ steps.buildx.outputs.name }}" \
+            "BASE_NO_CACHE=${{ inputs.image == 'base' }}" \
+            "TARGET=${{ inputs.image }}-$PLATFORM" \
+            "REPOSITORY=${{ inputs.repository }}" \
+            "TAGS=${{ steps.metadata.outputs.first-tag }}" \
+            "CONTEXTS=${{ steps.metadata.outputs.contexts }}"
+  merge:
+    runs-on: ubuntu-24.04
+    outputs:
+      digest: ${{ steps.build-push-manifest.outputs.digest }}
+      context: ${{ steps.build-push-manifest.outputs.context }}
+    needs:
+      - build
+    steps:
+      - name: Checkout
+        uses: "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803" # v6
+
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version-file: go.mod
+
+      - name: Validate repository
+        run: |
+          set -euo pipefail
+          case "${{ inputs.repository }}" in
+            islandora|docker.io/islandora|ghcr.io/islandora-devops|ghcr.io/islandora-devops/*)
+              echo "::error::Retired image namespace '${{ inputs.repository }}' must not be used; use lehighlts and ghcr.io/lehigh-university-libraries."
+              exit 1
+              ;;
+          esac
+
+      - name: Docker login
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        env:
+          DOCKERHUB_OIDC_CONNECTIONID: aad87001-a8d7-4dd6-96ba-46ae47c311d2
+          # Cover builds up to the GitHub Actions job limit of six hours.
+          DOCKERHUB_OIDC_EXPIREIN: 3600
+        with:
+          username: lehighlts
+
+      - name: ghcr Login
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and push manifest list
+        id: build-push-manifest
+        run: |
+          set -eou pipefail
+
+          MODE="fallback"
+          if [ "${{ inputs.version-tags }}" = "true" ]; then
+            MODE="version"
+          fi
+
+          TAGS="$(./ci/image-metadata.sh tags "${{ inputs.image }}" "$MODE" "${{ inputs.fallback-tag }}")"
+          FIRST_TAG="$(./ci/image-metadata.sh first-tag "${{ inputs.image }}" "$MODE" "${{ inputs.fallback-tag }}")"
+          PUBLISHED_IMAGE="$(./ci/image-metadata.sh published-image "${{ inputs.image }}")"
+
+          # Retry function with exponential backoff for rate limiting
+          retry_with_backoff() {
+            local max_attempts=5
+            local attempt=1
+            local delay=15
+            while true; do
+              if "$@"; then
+                return 0
+              fi
+              if [ $attempt -ge $max_attempts ]; then
+                echo "Command failed after $max_attempts attempts"
+                return 1
+              fi
+              echo "Attempt $attempt failed, retrying in ${delay}s..."
+              sleep $delay
+              attempt=$((attempt + 1))
+              delay=$((delay * 2))
+            done
+          }
+
+          REPOS=(
+            "${{ inputs.repository }}"
+            "ghcr.io/lehigh-university-libraries"
+          )
+          TAG_ARGS=""
+          IMAGE=""
+          for REPO in "${REPOS[@]}"; do
+            for TAG in ${TAGS}; do
+              # need to set digest/context below
+              if [ "$IMAGE" = "" ]; then
+                IMAGE="${{ inputs.repository }}/${PUBLISHED_IMAGE}:${TAG}"
+              fi
+              TAG_ARGS="${TAG_ARGS} -t ${REPO}/${PUBLISHED_IMAGE}:${TAG}"
+            done
+          done
+
+          echo "Tagging ${TAG_ARGS}"
+
+          # Extract the first tag to reference the source architectures
+          BASE_IMAGE_REF="${{ inputs.repository }}/${PUBLISHED_IMAGE}:${FIRST_TAG}"
+
+          SOURCE_IMAGES=("${BASE_IMAGE_REF}-amd64")
+          if [ "${{ inputs.image }}" != "scyllaridae-whisper" ]; then
+            SOURCE_IMAGES+=("${BASE_IMAGE_REF}-arm64")
+          fi
+          retry_with_backoff docker buildx imagetools create \
+            ${TAG_ARGS} \
+            "${SOURCE_IMAGES[@]}"
+
+          DIGEST=$(retry_with_backoff docker buildx imagetools inspect "$IMAGE" | grep Digest | awk '{print $2}')
+          echo "digest=-Pisle.${{ inputs.image }}.digest=${{ inputs.repository }}/${PUBLISHED_IMAGE}@$DIGEST" >> $GITHUB_OUTPUT
+          echo "context=docker-image://${{ inputs.repository }}/${PUBLISHED_IMAGE}@$DIGEST" >> $GITHUB_OUTPUT

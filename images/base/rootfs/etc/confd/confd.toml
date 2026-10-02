@@ -1,0 +1,5 @@
+backend = "env"
+confdir = "/etc/confd"
+log-level = "error"
+interval = 600
+noop = false

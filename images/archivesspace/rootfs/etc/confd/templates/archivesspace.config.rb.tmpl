@@ -1,0 +1,45 @@
+{{- define "sqlEscape" -}}{{- $escaped := replace . "\\" "\\\\" -1 -}}{{- replace $escaped "'" "\\'" -1 -}}{{- end -}}
+{{ $ingressHostnames := replace (getenv "INGRESS_HOSTNAMES") " " "" -1 }}
+{{ $publicHostRaw := index (split $ingressHostnames ",") 0 }}
+{{ $publicURLRaw := printf "%s://%s" (getenv "INGRESS_SCHEME") $publicHostRaw }}
+{{ $dbHost := getenv "DB_HOST" }}
+{{ $dbPort := getenv "DB_PORT" }}
+{{ $dbName := getenv "DB_NAME" }}
+{{ $dbUser := getenv "DB_USER" }}
+{{ $dbPassword := getenv "DB_PASSWORD" }}
+{{ $appConfigSolrURL := getenv "APPCONFIG_SOLR_URL" }}
+{{ $smtpFrom := getenv "SMTP_FROM" }}
+{{ $smtpHost := getenv "SMTP_HOST" }}
+require 'uri'
+
+db_user = URI.encode_www_form_component('{{ template "sqlEscape" $dbUser }}')
+db_password = URI.encode_www_form_component('{{ template "sqlEscape" $dbPassword }}')
+AppConfig[:db_url] = 'jdbc:mysql://{{ template "sqlEscape" $dbHost }}:{{ template "sqlEscape" $dbPort }}/{{ template "sqlEscape" $dbName }}?useUnicode=true&characterEncoding=UTF-8&user=' + db_user + '&password=' + db_password + '&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC'
+{{ if ne (getenv "APPCONFIG_SOLR_URL") "" -}}
+AppConfig[:solr_url] = '{{ template "sqlEscape" $appConfigSolrURL }}'
+{{ else -}}
+AppConfig[:solr_url] = 'http://solr:8983/solr/archivesspace'
+{{ end }}
+
+AppConfig[:frontend_proxy_url] = '{{ template "sqlEscape" $publicURLRaw }}/staff'
+AppConfig[:public_proxy_url] = '{{ template "sqlEscape" $publicURLRaw }}'
+
+{{ if ne (getenv "SMTP_FROM") "" -}}
+AppConfig[:global_email_from_address] = '{{ template "sqlEscape" $smtpFrom }}'
+{{ else -}}
+AppConfig[:global_email_from_address] = 'noreply@{{ template "sqlEscape" $publicHostRaw }}'
+{{ end }}
+AppConfig[:email_delivery_method] = :smtp
+AppConfig[:email_perform_deliveries] = true
+AppConfig[:email_raise_delivery_errors] = true
+AppConfig[:email_smtp_settings] = {
+  address: '{{ template "sqlEscape" $smtpHost }}',
+  port: {{ getenv "SMTP_PORT" }},
+  domain: '{{ template "sqlEscape" $publicHostRaw }}',
+  enable_starttls_auto: false
+}
+
+AppConfig[:enable_oai] = false
+
+local_config = File.join(File.dirname(__FILE__), "local.rb")
+require local_config if File.file?(local_config)

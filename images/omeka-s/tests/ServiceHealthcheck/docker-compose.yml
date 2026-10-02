@@ -1,0 +1,21 @@
+---
+name: omeka-s-servicehealthcheck
+services:
+  omeka-s:
+    image: ${OMEKA_S:-lehighlts/omeka-s:local-php83}
+    environment:
+      DB_PASSWORD: 'p"a\ss''word&+='
+      OMEKA_S_ADMIN_EMAIL: admin+test@example.com
+      OMEKA_S_ADMIN_NAME: "Administrator & Curator"
+      OMEKA_S_ADMIN_PASSWORD: 'Adm&in+=p@ss'
+      OMEKA_S_SITE_TITLE: "Omeka S & Test = +"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+  mariadb:
+    image: ${MARIADB11:-lehighlts/mariadb:local-11}
+    environment:
+      DB_ROOT_PASSWORD: root
+      DB_NAME: omeka_s
+      DB_USER: omeka_s
+      DB_PASSWORD: 'p"a\ss''word&+='

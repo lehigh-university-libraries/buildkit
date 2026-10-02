@@ -1,0 +1,26 @@
+#!/command/with-contenv bash
+# shellcheck shell=bash
+
+set -euo pipefail
+
+DIRS=(
+  /var/www/files
+  /var/www/ojs/cache
+  /var/www/ojs/public
+)
+echo "Setting OJS permissions..."
+pids=()
+for DIR in "${DIRS[@]}"; do
+  echo "Setting permissions on $DIR"
+  (
+    chown -R nginx:nginx "$DIR"
+    find "$DIR" -type d -exec chmod 750 {} \;
+    find "$DIR" -type f -exec chmod 640 {} \;
+    echo "Set permissions on $DIR OK"
+  ) &
+  pids+=("$!")
+done
+for pid in "${pids[@]}"; do
+  wait "$pid"
+done
+echo "OJS permissions set: dirs=750, files=640"

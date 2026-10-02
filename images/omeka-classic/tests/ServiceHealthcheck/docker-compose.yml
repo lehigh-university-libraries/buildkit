@@ -1,0 +1,20 @@
+---
+name: omeka-classic-servicehealthcheck
+services:
+  omeka-classic:
+    image: ${OMEKA_CLASSIC:-lehighlts/omeka-classic:local-php83}
+    environment:
+      DB_PASSWORD: 'p"a\ss''word&+='
+      OMEKA_CLASSIC_ADMIN_EMAIL: admin+test@example.com
+      OMEKA_CLASSIC_ADMIN_PASSWORD: 'Adm&in+=p@ss'
+      OMEKA_CLASSIC_SITE_TITLE: "Omeka Classic & Test = +"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+  mariadb:
+    image: ${MARIADB11:-lehighlts/mariadb:local-11}
+    environment:
+      DB_ROOT_PASSWORD: root
+      DB_NAME: omeka_classic
+      DB_USER: omeka_classic
+      DB_PASSWORD: 'p"a\ss''word&+='
