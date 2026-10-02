@@ -1,0 +1,14 @@
+---
+# Common to all services
+x-common: &common
+  restart: "no"
+
+name: solr9-servicehealthcheck
+services:
+  solr:
+    <<: *common
+    image: ${SOLR9:-lehighlts/solr:local-9}
+    volumes:
+      - ./test.sh:/test.sh # Test to run.
+    command:
+      - /test.sh # Run test and exit.

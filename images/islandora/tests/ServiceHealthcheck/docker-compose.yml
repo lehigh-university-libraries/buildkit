@@ -1,0 +1,5 @@
+---
+name: islandora-servicehealthcheck
+services:
+  islandora:
+    image: ${ISLANDORA:-lehighlts/islandora:local-php83}

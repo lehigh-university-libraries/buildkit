@@ -1,0 +1,7 @@
+[template]
+src = "ojs.conf.tmpl"
+dest = "/etc/nginx/shared/ojs.conf"
+uid = 0
+gid = 0
+mode = "0644"
+keys = [ "/" ]

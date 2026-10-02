@@ -1,0 +1,5 @@
+---
+name: drupal-servicehealthcheck
+services:
+  drupal:
+    image: ${DRUPAL:-lehighlts/drupal:local-php83}

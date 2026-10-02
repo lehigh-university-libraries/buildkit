@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+child=
+
+terminate() {
+  trap - TERM
+  if [ -n "${child}" ] && kill -0 "${child}" 2>/dev/null; then
+    kill -TERM -- "-${child}" 2>/dev/null || kill -TERM "${child}" 2>/dev/null || true
+    wait "${child}" 2>/dev/null || true
+  fi
+  exit 143
+}
+
+trap terminate TERM
+
+setsid /usr/local/bin/archivesspace-startup.sh &
+child=$!
+unset DB_ROOT_PASSWORD
+wait "${child}"

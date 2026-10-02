@@ -1,0 +1,44 @@
+root /var/www/ojs;
+index index.php;
+
+error_log /dev/stderr;
+access_log /dev/stdout combined;
+
+# API rewrite with redirect
+location ~ ^/api/v1(.*)$ {
+    return 307 /index.php/api/v1$1;
+}
+
+# Main location block
+location / {
+    # Try to serve file directly, otherwise pass to index.php
+    try_files $uri $uri/ /index.php/$uri?$query_string;
+}
+
+# Only the public front controller may execute through the web server. OJS
+# includes many CLI and handler PHP files beneath the document root.
+location ~ ^/index\.php(?:/|$) {
+    fastcgi_split_path_info ^(.+?\.php)(/.*)$;
+    if (!-f $document_root$fastcgi_script_name) {
+        return 404;
+    }
+
+    fastcgi_pass unix:{{ getenv "PHP_FPM_SOCKET" }};
+    {{ if eq (getenv "INGRESS_SCHEME") "https" }}
+    fastcgi_param HTTPS on;
+    fastcgi_param HTTP_SCHEME https;
+    {{ end }}
+    fastcgi_index index.php;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_param PATH_INFO $fastcgi_path_info;
+    include fastcgi_params;
+}
+
+location ~ \.php(?:/|$) {
+    return 404;
+}
+
+# Deny access to hidden files
+location ~ /\. {
+    deny all;
+}

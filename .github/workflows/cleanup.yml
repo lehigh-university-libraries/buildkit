@@ -1,0 +1,79 @@
+name: Cleanup old container images
+on:
+  workflow_dispatch:
+    inputs:
+      image:
+        description: "Single image to clean (leave empty for all images)"
+        required: false
+        type: string
+  schedule:
+    - cron: "0 13 * * 0" # Every Sunday at 1PM UTC (9AM EST)
+jobs:
+  find-images:
+    runs-on: ubuntu-24.04
+    outputs:
+      images: ${{ steps.set-matrix.outputs.images }}
+    steps:
+      - uses: "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803" # v6
+
+      - name: Generate matrix
+        id: set-matrix
+        run: |
+          if [ -n "${{ inputs.image }}" ]; then
+            # Single image specified
+            image="$(./ci/image-metadata.sh published-image "${{ inputs.image }}")"
+            images=$(jq -n -c --arg image "$image" '[$image]')
+          else
+            # Find all published image repositories.
+            images=$(./ci/image-metadata.sh list | while read image; do
+              ./ci/image-metadata.sh published-image "$image"
+            done | sort -u | jq -R . | jq -s -c .)
+          fi
+          # debug
+          echo "Images to process:"
+          echo "$images" | jq .
+
+          echo "images=$images" >> $GITHUB_OUTPUT
+
+  clean-dockerhub:
+    name: "DockerHub: ${{ matrix.name }}"
+    runs-on: ubuntu-24.04
+    needs: [find-images]
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        name: ${{ fromJson(needs.find-images.outputs.images) }}
+      # be nice to the dockerhub/ghcr API, only run 1 job at a time
+      max-parallel: 1
+      fail-fast: false
+    steps:
+      - uses: "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803" # v6
+      - name: "Cleanup lehighlts/${{ matrix.name }}"
+        run: ./ci/cleanup-images.sh --registry dockerhub --yolo
+        env:
+          DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+          DOCKERHUB_REPOSITORY: ${{ matrix.name }}
+
+  clean-ghcr:
+    name: "GHCR: ${{ matrix.name }}"
+    runs-on: ubuntu-24.04
+    needs: [find-images]
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        name: ${{ fromJson(needs.find-images.outputs.images) }}
+      # be nice to the dockerhub/ghcr API, only run 1 job at a time
+      max-parallel: 1
+      fail-fast: false
+    steps:
+      - uses: "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803" # v6
+      - name: "Cleanup ghcr.io/lehigh-university-libraries/${{ matrix.name }}"
+        run: ./ci/cleanup-images.sh --registry ghcr --yolo
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ORG: lehigh-university-libraries
+          PACKAGE_NAME: ${{ matrix.name }}

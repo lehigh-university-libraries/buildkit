@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -e
+unset DB_ROOT_PASSWORD
+exec s6-setuidgid mysql /usr/bin/mariadbd

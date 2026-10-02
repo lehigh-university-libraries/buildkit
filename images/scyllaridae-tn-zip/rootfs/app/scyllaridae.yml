@@ -1,0 +1,5 @@
+allowedMimeTypes:
+  - "application/zip"
+cmdByMimeType:
+  default:
+    cmd: "/app/cmd.sh"

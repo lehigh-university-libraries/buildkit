@@ -1,0 +1,30 @@
+---
+name: ojs-frontcontrollersecurity
+services:
+  ojs:
+    image: ${OJS:-lehighlts/ojs:local-php83}
+    environment:
+      DB_HOST: database
+      DB_PASSWORD: test-database-password
+      OJS_SALT: test-salt
+      OJS_API_KEY_SECRET: test-api-key-secret
+      OJS_SECRET_KEY: base64:MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE=
+      OJS_ADMIN_PASSWORD: test-admin-password
+    volumes:
+      - ./test.sh:/test.sh:ro
+    command:
+      - /test.sh
+    depends_on:
+      mariadb:
+        condition: service_healthy
+  mariadb:
+    image: ${MARIADB11:-lehighlts/mariadb:local-11}
+    environment:
+      DB_ROOT_PASSWORD: test-root-password
+      DB_NAME: ojs
+      DB_USER: ojs
+      DB_PASSWORD: test-database-password
+    networks:
+      default:
+        aliases:
+          - database

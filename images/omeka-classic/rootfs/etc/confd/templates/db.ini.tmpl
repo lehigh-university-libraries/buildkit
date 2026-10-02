@@ -1,0 +1,9 @@
+{{- define "doubleQuoteEscape" -}}{{- $escaped := replace . "\\" "\\\\" -1 -}}{{- replace $escaped "\"" "\\\"" -1 -}}{{- end -}}
+[database]
+host = "{{ template "doubleQuoteEscape" (getenv "DB_HOST") }}"
+username = "{{ template "doubleQuoteEscape" (getenv "DB_USER") }}"
+password = "{{ template "doubleQuoteEscape" (getenv "DB_PASSWORD") }}"
+dbname = "{{ template "doubleQuoteEscape" (getenv "DB_NAME") }}"
+prefix = "{{ template "doubleQuoteEscape" (getenv "OMEKA_CLASSIC_TABLE_PREFIX") }}"
+charset = "utf8mb4"
+port = "{{ template "doubleQuoteEscape" (getenv "DB_PORT") }}"
