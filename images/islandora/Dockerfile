@@ -1,5 +1,5 @@
-# syntax=docker/dockerfile:1.20.0
-ARG DRUPAL_BASE=drupal
+# syntax=docker/dockerfile:1.20.0@sha256:26147acbda4f14c5add9946e2fd2ed543fc402884fd75146bd342a7f6271dc1d
+ARG DRUPAL_BASE=drupal@sha256:7a6958c7f2c886da5e3825220fea02fec28c19bd71bea918b925f2fdb4763310
 FROM ${DRUPAL_BASE}
 
 ARG \
