@@ -3,3 +3,6 @@ allowedMimeTypes:
 cmdByMimeType:
   default:
     cmd: /app/cmd.sh
+    args:
+      - '%source-mime-ext'
+      - '%args'
