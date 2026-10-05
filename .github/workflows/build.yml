@@ -142,7 +142,7 @@ jobs:
             "TAGS=${{ steps.metadata.outputs.first-tag }}" \
             "CONTEXTS=${{ steps.metadata.outputs.contexts }}"
   merge:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       digest: ${{ steps.build-push-manifest.outputs.digest }}
       context: ${{ steps.build-push-manifest.outputs.context }}

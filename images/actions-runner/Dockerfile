@@ -1,4 +1,4 @@
-FROM ubuntu:24.04@sha256:786a8b558f7be160c6c8c4a54f9a57274f3b4fb1491cf65146521ae77ff1dc54
+FROM ubuntu:26.04@sha256:f144425ff09be612d6d9ad965196e9cdc23dae1f42110a8a11a3e9a8198759f7
 
 ARG TARGETARCH
 # renovate: datasource=github-releases depName=gha-runner packageName=actions/runner
@@ -27,16 +27,15 @@ RUN apt-get update && \
     gnupg2 \
     libmagic-dev \
     lsb-release \
-    php8.3 \
-    php8.3-curl \
-    php8.3-fpm \
-    php8.3-gd \
-    php8.3-intl \
-    php8.3-mbstring \
-    php8.3-mysql \
-    php8.3-opcache \
-    php8.3-xml \
-    php8.3-zip \
+    php \
+    php-curl \
+    php-fpm \
+    php-gd \
+    php-intl \
+    php-mbstring \
+    php-mysql \
+    php-xml \
+    php-zip \
     python3-pip \
     python3-setuptools \
     python3-build \
