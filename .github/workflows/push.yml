@@ -37,7 +37,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   lint:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     name: "lint ${{ inputs.tag && inputs.tag || github.ref_name }}"
     steps:
       - uses: "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1" # v7
@@ -48,7 +48,7 @@ jobs:
           shellcheck "${scripts[@]}"
 
   plan:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     name: Plan affected images
     needs: lint
     outputs:
@@ -318,7 +318,7 @@ jobs:
   test-level-4:
     if: ${{ always() }}
     needs: [test-level-4-matrix]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Verify level-4 matrix
         env:
