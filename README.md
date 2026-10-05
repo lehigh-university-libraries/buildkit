@@ -35,8 +35,8 @@ Imported from [docker-builds at 188d1b6](https://github.com/lehigh-university-li
 - `actions-runner` and `python3.13` (Bake target `python3-13`).
 - `scyllaridae-cleanpdf`, `scyllaridae-coverpage`, `scyllaridae-hls`,
   `scyllaridae-libreoffice`, `scyllaridae-ocrpdf`, `scyllaridae-openai-htr`,
-  `scyllaridae-pandoc`, `scyllaridae-tn-warc`, `scyllaridae-tn-zip`, and
-  `scyllaridae-whisper`.
+  `scyllaridae-scribe`, `scyllaridae-pandoc`, `scyllaridae-tn-warc`,
+  `scyllaridae-tn-zip`, and `scyllaridae-whisper`.
 
 These images use the same Bake targets, dependency planning, version tags,
 registry publishing, and `rootfs` layout as the existing images. The source

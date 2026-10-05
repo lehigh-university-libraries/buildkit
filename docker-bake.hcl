@@ -33,6 +33,7 @@ IMAGES = [
   "scyllaridae-tn-warc",
   "scyllaridae-pandoc",
   "scyllaridae-openai-htr",
+  "scyllaridae-scribe",
   "scyllaridae-ocrpdf",
   "scyllaridae-libreoffice",
   "scyllaridae-hls",
@@ -84,6 +85,7 @@ PUBLISHED_IMAGES = {
   "scyllaridae-tn-warc" = "scyllaridae-tn-warc"
   "scyllaridae-pandoc" = "scyllaridae-pandoc"
   "scyllaridae-openai-htr" = "scyllaridae-openai-htr"
+  "scyllaridae-scribe" = "scyllaridae-scribe"
   "scyllaridae-ocrpdf" = "scyllaridae-ocrpdf"
   "scyllaridae-libreoffice" = "scyllaridae-libreoffice"
   "scyllaridae-hls" = "scyllaridae-hls"
@@ -135,6 +137,7 @@ LOCAL_TAG_SUFFIXES = {
   "scyllaridae-tn-warc" = ""
   "scyllaridae-pandoc" = ""
   "scyllaridae-openai-htr" = ""
+  "scyllaridae-scribe" = ""
   "scyllaridae-ocrpdf" = ""
   "scyllaridae-libreoffice" = ""
   "scyllaridae-hls" = ""
@@ -186,6 +189,7 @@ DEPENDENCIES = {
   "scyllaridae-tn-warc" = ["scyllaridae"]
   "scyllaridae-pandoc" = ["scyllaridae"]
   "scyllaridae-openai-htr" = ["scyllaridae"]
+  "scyllaridae-scribe" = ["scyllaridae"]
   "scyllaridae-ocrpdf" = ["scyllaridae", "leptonica"]
   "scyllaridae-libreoffice" = ["scyllaridae"]
   "scyllaridae-hls" = ["scyllaridae"]
@@ -649,6 +653,11 @@ target "scyllaridae-ocrpdf-common" {
 target "scyllaridae-openai-htr-common" {
   inherits = ["common"]
   context = context("scyllaridae-openai-htr")
+}
+
+target "scyllaridae-scribe-common" {
+  inherits = ["common"]
+  context = context("scyllaridae-scribe")
 }
 
 target "scyllaridae-pandoc-common" {
