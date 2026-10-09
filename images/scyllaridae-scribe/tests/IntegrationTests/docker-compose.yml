@@ -1,0 +1,40 @@
+---
+name: scyllaridae-scribe-integrationtests
+services:
+  mock:
+    image: python:3.12-alpine
+    volumes:
+      - ./mock.py:/mock.py:ro
+      - certificates:/certificates
+    command:
+      - sh
+      - -ec
+      - |
+        apk add --no-cache openssl
+        openssl req -x509 -newkey rsa:2048 -nodes -days 1 \
+          -keyout /certificates/key.pem -out /certificates/cert.pem \
+          -subj /CN=mock -addext subjectAltName=DNS:mock
+        exec python /mock.py
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8000/image.png')"]
+      interval: 1s
+      timeout: 3s
+      retries: 60
+  scyllaridae-scribe:
+    image: ${SCYLLARIDAE_SCRIBE:-lehighlts/scyllaridae-scribe:local}
+    depends_on:
+      mock:
+        condition: service_healthy
+    environment:
+      SCRIBE_API_URL: https://mock:8443
+      SCRIBE_API_TOKEN: test-only
+      SCRIBE_WORKSPACE_ID: "42"
+      ISLANDORA_SCRIBE_CORRELATION_URL: https://mock:8443/islandora-scribe/correlation
+      ISLANDORA_SCRIBE_CORRELATION_SECRET: "01234567890123456789012345678901"
+      CURL_CA_BUNDLE: /certificates/cert.pem
+    volumes:
+      - ./test.sh:/test.sh:ro
+      - certificates:/certificates:ro
+    command: [bash, /test.sh]
+volumes:
+  certificates:

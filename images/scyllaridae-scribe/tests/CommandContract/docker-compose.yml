@@ -1,0 +1,13 @@
+---
+name: scyllaridae-scribe-commandcontract
+services:
+  scyllaridae-scribe:
+    image: ${SCYLLARIDAE_SCRIBE:-lehighlts/scyllaridae-scribe:local}
+    environment:
+      SCRIBE_COMMAND: /app/cmd.sh
+    volumes:
+      - ../contract.sh:/tests/contract.sh:ro
+    command:
+      - /command/with-contenv
+      - bash
+      - /tests/contract.sh
