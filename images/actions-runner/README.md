@@ -1,6 +1,6 @@
 # GitHub Actions Runner
 
-GitHub Actions runner version 2.334.0.
+GitHub Actions runner version 2.338.0.
 
 Includes Docker, kubectl, GitHub CLI, PHP, Composer, and Lehigh Islandora Workbench dependencies.
 Supports AMD64 and ARM64 using independently verified runner release archives.
