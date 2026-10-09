@@ -1,5 +1,5 @@
-# syntax=docker/dockerfile:1.20.0@sha256:26147acbda4f14c5add9946e2fd2ed543fc402884fd75146bd342a7f6271dc1d
-ARG DRUPAL_BASE=drupal@sha256:7a6958c7f2c886da5e3825220fea02fec28c19bd71bea918b925f2fdb4763310
+# syntax=docker/dockerfile:1.28.0@sha256:bb22d9815c728170f72750f4e5b0d672e06176142e1d602c7e66c050100b7e5b
+ARG DRUPAL_BASE=drupal@sha256:d059fada2d2f9ebfcde8f8d3208007946d1ee843ee2dd9ed00b15ead0c282def
 FROM ${DRUPAL_BASE}
 
 ARG \
@@ -25,12 +25,12 @@ RUN PHP_PACKAGE="php$(php -r 'echo PHP_MAJOR_VERSION . PHP_MINOR_VERSION;')" && 
 ARG \
   TARGETARCH \
   # renovate: datasource=github-releases depName=crosswalk packageName=lehigh-university-libraries/crosswalk
-  CROSSWALK_VERSION=0.3.9 \
+  CROSSWALK_VERSION=0.6.0 \
   CROSSWALK_BASE_URL="https://github.com/lehigh-university-libraries/crosswalk/releases/download/v${CROSSWALK_VERSION}" \
   CROSSWALK_AMD64=crosswalk_Linux_x86_64.tar.gz   \
-  CROSSWALK_AMD64_SHA256="77b29f8f34c030d6b52194b7d9dcb41b087810a984be43f8c9615316658ef2fe" \
+  CROSSWALK_AMD64_SHA256="3c6e3707189d65b06e07a6f70602c1711b7a9016a90c04fc49e2963e7f5e4c1e" \
   CROSSWALK_ARM64=crosswalk_Linux_arm64.tar.gz \
-  CROSSWALK_ARM64_SHA256="b4ed72b250ce1f774d54f39171b783b8745b4eb2b313ea221da75f5aa7967ab5"
+  CROSSWALK_ARM64_SHA256="d2b6bee8eb72513b85c7816b1f169de1e6ad64e665f06a1f444435c25a337096"
 
 RUN --mount=type=cache,id=crosswalk-downloads-${TARGETARCH},sharing=locked,target=/opt/downloads \
     if [ "${TARGETARCH}" = "amd64" ]; \

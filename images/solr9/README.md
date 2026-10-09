@@ -1,6 +1,6 @@
 # Solr 9
 
-Docker image for [solr] version 9.10.1.
+Docker image for [solr] version 9.11.0.
 
 Built from [lehigh-university-libraries/buildkit solr9](https://github.com/lehigh-university-libraries/buildkit/tree/main/images/solr9)
 

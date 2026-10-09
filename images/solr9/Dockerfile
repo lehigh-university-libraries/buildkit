@@ -2,10 +2,10 @@ FROM java17
 
 ARG TARGETARCH
 # renovate: datasource=custom.apache-downloads depName=apache-solr9 packageName=solr/solr
-ARG SOFTWARE_VERSION=9.10.1
+ARG SOFTWARE_VERSION=9.11.0
 ARG SOLR_FILE=solr-${SOFTWARE_VERSION}.tgz
 ARG SOLR_URL=https://downloads.apache.org/solr/solr/${SOFTWARE_VERSION}/solr-${SOFTWARE_VERSION}.tgz
-ARG SOLR_FILE_SHA256="31dd91aeade540f4d7005cc1a1f7cc583ad77a78d800c9065cac06af1b097454"
+ARG SOLR_FILE_SHA256="677078743639f708e88510fd99e91837a7ccf3f9ce2c6a63d49606274ec03e79"
 # renovate: datasource=github-releases depName=solr-ocrhighlighting packageName=dbmdz/solr-ocrhighlighting
 ARG OCRHIGHLIGHT_VERSION=0.10.1
 ARG OCRHIGHLIGHT_FILE=solr-ocrhighlighting-${OCRHIGHLIGHT_VERSION}.jar
