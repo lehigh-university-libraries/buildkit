@@ -1,6 +1,6 @@
 # Tomcat
 
-Docker image for [Tomcat] version 9.0.122.
+Docker image for [Tomcat] version 9.0.123.
 
 Built from [lehigh-university-libraries/buildkit tomcat](https://github.com/lehigh-university-libraries/buildkit/tree/main/images/tomcat)
 
