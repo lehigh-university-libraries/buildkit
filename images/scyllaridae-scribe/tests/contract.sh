@@ -29,13 +29,20 @@ done
 case "$url" in
   */StartUploadBatch)
     jq -e --arg op "$TEST_OPERATION" --arg ref "$TEST_REFERENCE" '.batchId == $op and .externalReferenceId == $ref and (.files[0].contentSha256 | length) == 64' "$request" >/dev/null
+    if [[ ${TEST_EXPECT_JPEG:-0} == 1 ]]; then
+      jq -e '.name | endswith(".jpg")' "$request" >/dev/null
+    fi
     if [[ ${TEST_CONTEXT:-0} == 0 ]]; then
       jq -e 'has("contextId") | not' "$request" >/dev/null
     else
       jq -e --arg context "$TEST_CONTEXT" '.contextId == $context' "$request" >/dev/null
     fi
     printf '{"item":{"id":"item-1"}}' > "$output" ;;
-  */UploadItemImage) printf '{"image":{"id":"7"},"transcriptionJobId":"9"}' > "$output" ;;
+  */UploadItemImage)
+    if [[ ${TEST_EXPECT_JPEG:-0} == 1 ]]; then
+      jq -er .imageData "$request" | base64 -d | head -c 3 | od -An -tx1 | tr -d ' \n' | grep -qx ffd8ff
+    fi
+    printf '{"image":{"id":"7"},"transcriptionJobId":"9"}' > "$output" ;;
   */GetTranscriptionJob) printf '{"job":{"status":"TRANSCRIPTION_JOB_STATUS_COMPLETED"}}' > "$output" ;;
   */GetAnnotationPage) printf '{"revision":"3"}' > "$output" ;;
   */ExportAnnotationPage)
@@ -71,10 +78,27 @@ for context in -1 abc 1.5 '55;echo'; do
   [[ ! -s "$TASK_TMP/hocr" ]]
 done
 unset TEST_CONTEXT
+# Houdini service files are JPEG-compressed tiled pyramids; they must reach
+# Scribe as JPEG.
+if command -v vips >/dev/null; then
+  vips black "$TASK_TMP/black.v" 64 64 --bands 3
+  vips tiffsave "$TASK_TMP/black.v" "$TASK_TMP/service.tiff" --tile --pyramid --compression jpeg --tile-width 16 --tile-height 16
+  export TEST_EXPECT_JPEG=1
+  bash "$SCRIBE_COMMAND" tiff "$TEST_OPERATION" "$TEST_REFERENCE" < "$TASK_TMP/service.tiff" > "$TASK_TMP/hocr"
+  [[ $(cat "$TASK_TMP/hocr") == '<html>published</html>' ]]
+  if printf image | bash "$SCRIBE_COMMAND" tiff "$TEST_OPERATION" "$TEST_REFERENCE" > "$TASK_TMP/hocr" 2>/dev/null; then
+    printf 'Undecodable TIFF was accepted.\n' >&2
+    exit 1
+  fi
+  [[ ! -s "$TASK_TMP/hocr" ]]
+  unset TEST_EXPECT_JPEG
+else
+  printf 'vips not found; skipping TIFF conversion checks.\n' >&2
+fi
 export TEST_REJECT_CALLBACK=1
 if printf image | bash "$SCRIBE_COMMAND" png "$TEST_OPERATION" "$TEST_REFERENCE" > "$TASK_TMP/hocr" 2>/dev/null; then
   printf 'Failed correlation callback was accepted.\n' >&2
   exit 1
 fi
 [[ ! -s "$TASK_TMP/hocr" ]]
-printf 'Scribe command contract passed (contexts, replay, correlation signature, failure).\n'
+printf 'Scribe command contract passed (contexts, replay, TIFF conversion, correlation signature, failure).\n'

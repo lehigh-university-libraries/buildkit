@@ -29,7 +29,9 @@ checkout. The dev Compose override runs the local `:local` image and routes
 Alpaca's Scribe queue to it.
 
 The command accepts image bytes on standard input and the source extension as
-its first argument. Images must be no larger than 100 MiB.
+its first argument. Images must be no larger than 100 MiB. TIFF and JPEG 2000 sources, such as
+Houdini's JPEG-compressed pyramidal service files, are converted to a
+full-resolution JPEG with `vips` before upload because Scribe cannot decode them.
 
 ## Islandora Scribe correlation
 

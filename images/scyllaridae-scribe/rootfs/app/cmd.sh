@@ -54,6 +54,24 @@ if (( SIZE == 0 || SIZE > 104857600 )); then
   exit 1
 fi
 
+# Scribe cannot decode JPEG-compressed, tiled or BigTIFF pyramids, or every
+# JPEG 2000 variant, so send the full-resolution level as a JPEG instead.
+case "$SOURCE_EXT" in
+  tif|tiff|jp2)
+    if ! vips copy "${INPUT}[page=0]" "$TMP_DIR/image.jpg[Q=90]" 2>/dev/null; then
+      printf 'Unable to convert %s image to JPEG.\n' "$SOURCE_EXT" >&2
+      exit 1
+    fi
+    INPUT="$TMP_DIR/image.jpg"
+    SOURCE_EXT=jpg
+    SIZE=$(wc -c < "$INPUT" | tr -d ' ')
+    if (( SIZE == 0 || SIZE > 104857600 )); then
+      printf 'Converted image must be between 1 byte and 100 MiB.\n' >&2
+      exit 1
+    fi
+    ;;
+esac
+
 DIGEST=$(sha256sum "$INPUT" | cut -d ' ' -f 1)
 FILENAME="image-${DIGEST:0:16}.$SOURCE_EXT"
 BATCH_ID=$OPERATION_ID
