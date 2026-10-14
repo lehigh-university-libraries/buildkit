@@ -1,0 +1,10 @@
+name: scyllaridae-scribe-book-contract
+services:
+  scyllaridae-scribe-book:
+    image: ${SCYLLARIDAE_SCRIBE_BOOK:-lehighlts/scyllaridae-scribe-book:local}
+    volumes:
+      - ../contract.sh:/tests/contract.sh:ro
+    command:
+      - /command/with-contenv
+      - bash
+      - /tests/contract.sh
