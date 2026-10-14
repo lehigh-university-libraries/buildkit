@@ -34,6 +34,7 @@ IMAGES = [
   "scyllaridae-pandoc",
   "scyllaridae-openai-htr",
   "scyllaridae-scribe",
+  "scyllaridae-scribe-book",
   "scyllaridae-ocrpdf",
   "scyllaridae-libreoffice",
   "scyllaridae-hls",
@@ -86,6 +87,7 @@ PUBLISHED_IMAGES = {
   "scyllaridae-pandoc" = "scyllaridae-pandoc"
   "scyllaridae-openai-htr" = "scyllaridae-openai-htr"
   "scyllaridae-scribe" = "scyllaridae-scribe"
+  "scyllaridae-scribe-book" = "scyllaridae-scribe-book"
   "scyllaridae-ocrpdf" = "scyllaridae-ocrpdf"
   "scyllaridae-libreoffice" = "scyllaridae-libreoffice"
   "scyllaridae-hls" = "scyllaridae-hls"
@@ -138,6 +140,7 @@ LOCAL_TAG_SUFFIXES = {
   "scyllaridae-pandoc" = ""
   "scyllaridae-openai-htr" = ""
   "scyllaridae-scribe" = ""
+  "scyllaridae-scribe-book" = ""
   "scyllaridae-ocrpdf" = ""
   "scyllaridae-libreoffice" = ""
   "scyllaridae-hls" = ""
@@ -190,6 +193,7 @@ DEPENDENCIES = {
   "scyllaridae-pandoc" = ["scyllaridae"]
   "scyllaridae-openai-htr" = ["scyllaridae"]
   "scyllaridae-scribe" = ["scyllaridae"]
+  "scyllaridae-scribe-book" = ["scyllaridae"]
   "scyllaridae-ocrpdf" = ["scyllaridae", "leptonica"]
   "scyllaridae-libreoffice" = ["scyllaridae"]
   "scyllaridae-hls" = ["scyllaridae"]
@@ -679,4 +683,9 @@ target "scyllaridae-whisper-common" {
   inherits = ["common"]
   context = context("scyllaridae-whisper")
   platforms = ["linux/amd64"]
+}
+
+target "scyllaridae-scribe-book-common" {
+  inherits = ["common"]
+  context = context("scyllaridae-scribe-book")
 }
