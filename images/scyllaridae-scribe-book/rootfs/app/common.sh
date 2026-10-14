@@ -46,5 +46,7 @@ read_manifest() {
   jq -e '(.items // .sequences[0].canvases) | type == "array" and length > 0 and length <= 1000' "$TASK_TMP/manifest.json" > /dev/null || reject manifest
   jq -c '.items // .sequences[0].canvases' "$TASK_TMP/manifest.json" > "$TASK_TMP/canvases.json"
   jq -Sc '[.[] | [(.id // .["@id"]), .width, .height, (.items // .images)]]' "$TASK_TMP/canvases.json" > "$TASK_TMP/painting.json"
+  # Used by the transcribe and PDF scripts that source this file.
+  # shellcheck disable=SC2034
   SIGNATURE=$(sha256sum "$TASK_TMP/painting.json" | cut -d ' ' -f 1)
 }
