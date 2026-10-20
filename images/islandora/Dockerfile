@@ -6,7 +6,7 @@ ARG \
     # renovate: datasource=repology depName=alpine_3_24/ffmpeg
     FFMPEG_VERSION=8.1.2-r0 \
     # renovate: datasource=repology depName=alpine_3_24/imagemagick
-    IMAGEMAGICK_VERSION=7.1.2.30-r0 \
+    IMAGEMAGICK_VERSION=7.1.2.34-r0 \
     # renovate: datasource=repology depName=alpine_3_24/vips
     VIPS_VERSION=8.18.2-r0
 
