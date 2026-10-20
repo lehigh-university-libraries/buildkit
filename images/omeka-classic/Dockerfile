@@ -10,7 +10,7 @@ ARG PHP_PACKAGE=php83
 
 ARG \
     # renovate: datasource=repology depName=alpine_3_24/imagemagick
-    IMAGEMAGICK_VERSION=7.1.2.30-r0 \
+    IMAGEMAGICK_VERSION=7.1.2.34-r0 \
     # renovate: datasource=repology depName=alpine_3_24/msmtp
     MSMTP_VERSION=1.8.32-r1 \
     # renovate: datasource=repology depName=alpine_3_24/unzip
