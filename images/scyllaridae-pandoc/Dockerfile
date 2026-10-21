@@ -3,7 +3,7 @@ FROM pandoc/latex:3.10-ubuntu@sha256:568ae5d3dc4cf9266753c9c78e7d073c1472f6540e0
 
 ARG \
   # renovate: datasource=repology depName=ubuntu_24_04/curl
-  CURL_VERSION="8.5.0-2ubuntu10.15" \
+  CURL_VERSION="8.5.0-2ubuntu10.16" \
   # renovate: datasource=repology depName=ubuntu_24_04/bash
   BASH_VERSION="5.2.21-2ubuntu4" \
   # renovate: datasource=repology depName=ubuntu_24_04/gosu
