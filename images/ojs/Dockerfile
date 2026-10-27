@@ -12,7 +12,7 @@ ARG \
     # renovate: datasource=repology depName=alpine_3_24/antiword
     ANTIWORD_VERSION=0.37-r6 \
     # renovate: datasource=repology depName=alpine_3_24/ghostscript
-    GHOSTSCRIPT_VERSION=10.07.1-r0 \
+    GHOSTSCRIPT_VERSION=10.08.0-r0 \
     # renovate: datasource=repology depName=alpine_3_24/npm
     NPM_VERSION=11.12.1-r0 \
     # renovate: datasource=repology depName=alpine_3_24/poppler-utils

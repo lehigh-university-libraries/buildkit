@@ -24,7 +24,7 @@ ARG \
     # renovate: datasource=repology depName=alpine_3_24/icu-data-full
     ICU_VERSION=78.1-r0 \
     # renovate: datasource=repology depName=alpine_3_24/php84
-    SOFTWARE_VERSION=8.4.26-r0
+    SOFTWARE_VERSION=8.4.27-r0
 
 # Platform specific does require arch specific identifier.
 RUN --mount=type=cache,id=php84-apk-${TARGETARCH},sharing=locked,target=/var/cache/apk \

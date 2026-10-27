@@ -24,7 +24,7 @@ ARG \
   # renovate: datasource=repology depName=alpine_3_24/bash
   BASH_VERSION=5.3.9-r1 \
   # renovate: datasource=repology depName=alpine_3_24/ca-certificates
-  CA_CERTIFICATES_VERSION=20260909-r0 \
+  CA_CERTIFICATES_VERSION=20261020-r0 \
   # renovate: datasource=repology depName=alpine_3_24/curl
   CURL_VERSION=8.22.0-r0 \
   # renovate: datasource=repology depName=alpine_3_24/git
@@ -36,7 +36,7 @@ ARG \
   # renovate: datasource=repology depName=alpine_3_24/jq
   JQ_VERSION=1.8.2-r0 \
   # renovate: datasource=repology depName=alpine_3_24/mariadb-client
-  MARIADB_CLIENT_VERSION=11.8.8-r0 \
+  MARIADB_CLIENT_VERSION=11.8.9-r0 \
   # renovate: datasource=repology depName=alpine_3_24/netcat-openbsd
   NETCAT_OPENBSD_VERSION=1.234.1-r0 \
   # renovate: datasource=repology depName=alpine_3_24/openssl
@@ -56,7 +56,7 @@ ARG \
   # renovate: datasource=repology depName=alpine_3_24/xz
   XZ_VERSION=5.8.4-r0 \
   # renovate: datasource=repology depName=alpine_3_24/yq-go
-  YQ_VERSION=4.53.3-r1
+  YQ_VERSION=4.53.3-r2
 
 # Install packages and tools required by all downstream images.
 # Platform specific does require arch specific identifier.
