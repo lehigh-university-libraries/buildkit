@@ -91,7 +91,9 @@ for _ in 1 2; do
 done
 bash "$COMMAND" https://islandora.example/node/100 pdf "$OPERATION" 0 | grep -qx OK
 BOOK_MANIFEST_STATUS=403 bash "$COMMAND" https://islandora.example/node/100 transcribe "$OPERATION" 55 | grep -qx Rejected
-if BOOK_MANIFEST_STATUS=503 bash "$COMMAND" https://islandora.example/node/100 transcribe "$OPERATION" 55; then exit 1; fi
-if BOOK_REJECT_CORRELATION=1 bash "$COMMAND" https://islandora.example/node/100 transcribe "$OPERATION" 55; then exit 1; fi
+if BOOK_MANIFEST_STATUS=503 bash "$COMMAND" https://islandora.example/node/100 transcribe "$OPERATION" 55 2> "$TASK_TEST/error"; then exit 1; fi
+grep -qx 'Book service temporarily unavailable (islandora:manifest, HTTP 503).' "$TASK_TEST/error"
+if BOOK_REJECT_CORRELATION=1 bash "$COMMAND" https://islandora.example/node/100 transcribe "$OPERATION" 55 2> "$TASK_TEST/error"; then exit 1; fi
+grep -qx 'Book service temporarily unavailable (islandora:callback:correlate, HTTP 503).' "$TASK_TEST/error"
 if bash "$COMMAND" https://foreign.example/node/100 pdf "$OPERATION" 0; then exit 1; fi
 printf 'Book import, replay, PDF upload, signed callbacks, credential isolation and retry dispositions passed.\n'
