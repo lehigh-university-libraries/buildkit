@@ -39,6 +39,10 @@ The command now requires the source extension, a stable 32-character
 hexadecimal operation ID, the canonical source media UUID, a context ID (`0`
 for automatic selection), and the positive Islandora node ID. The node ID is
 the Scribe item title; the uploaded filename remains a content-hash filename.
+An optional sixth argument is a base64-encoded JSON object containing
+`external_identifier` (the same node ID) and `title` (the original node title).
+The Drupal action supplies it for library search. Older requests still retain
+the external identifier without a title. The callback UUID is unchanged.
 The operation
 ID is reused as the upload batch ID. It sets `externalReferenceId` and sends a
 signed callback with the workspace/item/image tuple before returning hOCR.

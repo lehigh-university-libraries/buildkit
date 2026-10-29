@@ -28,6 +28,8 @@ while (($#)); do
 done
 case "$url" in
   */StartUploadBatch)
+    jq -e '.metadata | fromjson | .external_identifier == "1234"' "$request" > /dev/null
+    if [[ -n ${TEST_TITLE:-} ]]; then jq -e --arg title "$TEST_TITLE" '.metadata | fromjson | .title == $title' "$request" > /dev/null; fi
     jq -e --arg op "$TEST_OPERATION" --arg ref "$TEST_REFERENCE" '.batchId == $op and .externalReferenceId == $ref and .name == "1234" and (.files[0].contentSha256 | length) == 64' "$request" >/dev/null
     if [[ ${TEST_EXPECT_JPEG:-0} == 1 ]]; then
       jq -e '.files[0].filename | endswith(".jpg")' "$request" >/dev/null
@@ -64,6 +66,13 @@ export PATH="$TASK_TMP:$PATH"
 for _ in 1 2; do
   printf image | bash "$SCRIBE_COMMAND" png "$TEST_OPERATION" "$TEST_REFERENCE" 0 1234 > "$TASK_TMP/hocr"
   [[ $(cat "$TASK_TMP/hocr") == '<html>published</html>' ]]
+done
+export TEST_TITLE='Codex "Nicholas"; $(do-not-run)'
+metadata=$(jq -cn --arg title "$TEST_TITLE" '{external_identifier:"1234",title:$title}' | base64 | tr -d '\n')
+printf image | bash "$SCRIBE_COMMAND" png "$TEST_OPERATION" "$TEST_REFERENCE" 0 1234 "$metadata" > "$TASK_TMP/hocr"
+unset TEST_TITLE
+for metadata in invalid 'eyJleHRlcm5hbF9pZGVudGlmaWVyIjoiOTk5IiwidGl0bGUiOiJ0aXRsZSJ9'; do
+  if printf image | bash "$SCRIBE_COMMAND" png "$TEST_OPERATION" "$TEST_REFERENCE" 0 1234 "$metadata" > /dev/null 2>&1; then exit 1; fi
 done
 export TEST_CONTEXT=55
 for _ in 1 2; do

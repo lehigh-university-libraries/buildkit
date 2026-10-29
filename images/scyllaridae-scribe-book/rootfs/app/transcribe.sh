@@ -12,7 +12,7 @@ if [[ -n "$ITEM_ID" && "$PREVIOUS_SIGNATURE" == "$SIGNATURE" ]]; then
   rpc ItemService/GetItem "$TASK_TMP/request.json" "$TASK_TMP/item.json"
 else
   jq -n --slurpfile plan "$TASK_TMP/plan.json" --arg manifest "$NODE_URL/book-manifest" --arg context "$CONTEXT_ID" --arg operation "$OPERATION_ID" --arg node "$NID" \
-    '{manifestUrl:$manifest,name:$node,externalReferenceId:$plan[0].externalReferenceId,contextId:$context,idempotencyKey:$operation,ignoreExistingOcr:true}' > "$TASK_TMP/request.json"
+    '{manifestUrl:$manifest,name:$node,metadata:({external_identifier:$node,title:$plan[0].name}|tojson),externalReferenceId:$plan[0].externalReferenceId,contextId:$context,idempotencyKey:$operation,ignoreExistingOcr:true}' > "$TASK_TMP/request.json"
   rpc ItemService/ImportManifest "$TASK_TMP/request.json" "$TASK_TMP/item.json"
 fi
 jq -e --slurpfile plan "$TASK_TMP/plan.json" --slurpfile canvases "$TASK_TMP/canvases.json" \

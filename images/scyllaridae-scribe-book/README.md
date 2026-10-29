@@ -1,5 +1,9 @@
 # Scyllaridae Scribe books
 
+New imports retain the source node ID as `metadata.external_identifier` and
+the original Islandora title as `metadata.title` for Scribe library search.
+The numeric item name and UUID used for callback correlation are unchanged.
+
 Processes Islandora node events like the mergepdf service. Drupal sends the
 canonical node URL plus `transcribe OPERATION_ID CONTEXT_ID` or
 `pdf OPERATION_ID 0`; it does not submit Scribe jobs itself.

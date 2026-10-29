@@ -29,6 +29,7 @@ OPERATION_ID=${2:-}
 EXTERNAL_REFERENCE_ID=${3:-}
 CONTEXT_ID=${4:-0}
 NODE_ID=${5:-}
+ENCODED_METADATA=${6:-}
 if [[ ! "$NODE_ID" =~ ^[1-9][0-9]{0,18}$ ]]; then
   printf 'Scribe requires a positive Islandora node ID.\n' >&2
   exit 1
@@ -50,6 +51,16 @@ fi
 umask 077
 TMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TMP_DIR"' EXIT
+
+jq -n --arg node "$NODE_ID" '{external_identifier:$node}' > "$TMP_DIR/metadata.json"
+if [[ -n "$ENCODED_METADATA" ]]; then
+  if (( ${#ENCODED_METADATA} > 16384 )) || [[ ! "$ENCODED_METADATA" =~ ^[A-Za-z0-9+/]+={0,2}$ ]] ||
+    ! printf '%s' "$ENCODED_METADATA" | base64 -d > "$TMP_DIR/metadata.json" ||
+    ! jq -e --arg node "$NODE_ID" 'type == "object" and .external_identifier == $node and (.title | type == "string") and (keys | sort == ["external_identifier","title"])' "$TMP_DIR/metadata.json" > /dev/null; then
+    printf 'Invalid Scribe source metadata.\n' >&2
+    exit 1
+  fi
+fi
 
 INPUT="$TMP_DIR/image.$SOURCE_EXT"
 cat > "$INPUT"
@@ -118,7 +129,8 @@ jq -n \
   --arg context_id "$CONTEXT_ID" \
   --arg size "$SIZE" \
   --arg digest "$DIGEST" \
-  '{batchId:$batch_id,name:$node,externalReferenceId:$external_reference_id,files:[{filename:$filename,size:$size,contentSha256:$digest}]} | if $context_id == "0" then . else . + {contextId:$context_id} end' \
+  --slurpfile metadata "$TMP_DIR/metadata.json" \
+  '{batchId:$batch_id,name:$node,metadata:($metadata[0]|tojson),externalReferenceId:$external_reference_id,files:[{filename:$filename,size:$size,contentSha256:$digest}]} | if $context_id == "0" then . else . + {contextId:$context_id} end' \
   > "$TMP_DIR/start-batch.json"
 rpc ItemService/StartUploadBatch "$TMP_DIR/start-batch.json" "$TMP_DIR/start-batch-response.json"
 
