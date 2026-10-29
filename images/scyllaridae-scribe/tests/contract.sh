@@ -67,7 +67,7 @@ for _ in 1 2; do
   printf image | bash "$SCRIBE_COMMAND" png "$TEST_OPERATION" "$TEST_REFERENCE" 0 1234 > "$TASK_TMP/hocr"
   [[ $(cat "$TASK_TMP/hocr") == '<html>published</html>' ]]
 done
-export TEST_TITLE='Codex "Nicholas"; $(do-not-run)'
+export TEST_TITLE="Codex \"Nicholas\"; \$(do-not-run)"
 metadata=$(jq -cn --arg title "$TEST_TITLE" '{external_identifier:"1234",title:$title}' | base64 | tr -d '\n')
 printf image | bash "$SCRIBE_COMMAND" png "$TEST_OPERATION" "$TEST_REFERENCE" 0 1234 "$metadata" > "$TASK_TMP/hocr"
 unset TEST_TITLE
