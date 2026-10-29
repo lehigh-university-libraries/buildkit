@@ -9,6 +9,11 @@ from Drupal. `transcribe.sh` imports or reuses the book and reprocesses its
 pages. `pdf.sh` prepares the revision-checked PDF and uploads it through the
 same authenticated document/Original File endpoint used by mergepdf.
 
+New imports use the numeric Islandora node ID as their Scribe item title so
+books and individual image uploads can be cross-referenced by node ID. Reused
+items retain their existing names; this does not rewrite previously imported
+items or change external-reference/correlation identifiers.
+
 Configure `SCRIBE_API_URL`, `SCRIBE_WORKSPACE_ID`, and `SCRIBE_API_TOKEN`
 (or a refreshed `SCRIBE_API_JWT_FILE`). The microservice key requires
 `items:create`, `items:write`, `items:read`, `transcription:read`, and

@@ -60,7 +60,7 @@ case "$url" in
     grep -q 'X-Scribe-Workspace-ID: 42' "$config"
     case "$url" in
       */ImportManifest)
-        jq -e '.ignoreExistingOcr and .contextId == "55" and .externalReferenceId == "book-uuid" and .manifestUrl == "https://islandora.example/node/100/book-manifest" and .idempotencyKey == "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"' "$input" > /dev/null ;;
+        jq -e '.name == "100" and .ignoreExistingOcr and .contextId == "55" and .externalReferenceId == "book-uuid" and .manifestUrl == "https://islandora.example/node/100/book-manifest" and .idempotencyKey == "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"' "$input" > /dev/null ;;
       */ReprocessItemImage)
         jq -e '.itemImageId == "7" and .expectedRevision == "3" and .contextId == "55"' "$input" > /dev/null
         printf '{}' > "$output"; printf 200; exit ;;

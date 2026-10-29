@@ -13,7 +13,7 @@ request() {
     --max-time 30 \
     --header 'Accept: application/hocr+xml' \
     --header 'Apix-Ldp-Resource: http://mock:8000/image.png' \
-    --header 'X-Islandora-Args: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa 12345678-1234-1234-1234-123456789abc 55' \
+    --header 'X-Islandora-Args: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa 12345678-1234-1234-1234-123456789abc 55 1234' \
     http://localhost:8080/
 }
 

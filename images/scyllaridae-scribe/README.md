@@ -36,7 +36,10 @@ full-resolution JPEG with `vips` before upload because Scribe cannot decode them
 ## Islandora Scribe correlation
 
 The command now requires the source extension, a stable 32-character
-hexadecimal operation ID, and the canonical source media UUID. The operation
+hexadecimal operation ID, the canonical source media UUID, a context ID (`0`
+for automatic selection), and the positive Islandora node ID. The node ID is
+the Scribe item title; the uploaded filename remains a content-hash filename.
+The operation
 ID is reused as the upload batch ID. It sets `externalReferenceId` and sends a
 signed callback with the workspace/item/image tuple before returning hOCR.
 Set `ISLANDORA_SCRIBE_CORRELATION_URL` to the public HTTPS Drupal
@@ -61,8 +64,8 @@ image upload, signed correlation, repeated requests, and callback rejection.
 
 ## Processing context
 
-The optional fourth command argument is a numeric Scribe context ID. Positive
-IDs are passed as `StartUploadBatch.contextId`; `0` or omission uses automatic
+The fourth command argument is a numeric Scribe context ID. Positive
+IDs are passed as `StartUploadBatch.contextId`; `0` uses automatic
 selection. The Drupal action exposes this as **Scribe processing context ID**
 and persists it with the ingest operation. Keep it unchanged on retries, and
 use the shared node hOCR derivative for all context actions. A new completed

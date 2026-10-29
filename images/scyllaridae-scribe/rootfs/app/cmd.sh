@@ -24,10 +24,15 @@ if [[ ! "$SCRIBE_WORKSPACE_ID" =~ ^[1-9][0-9]*$ ]]; then
   exit 1
 fi
 
-# Drupal supplies an immutable operation ID and source media UUID as args.
+# Drupal supplies the operation ID, source media UUID, context and node ID.
 OPERATION_ID=${2:-}
 EXTERNAL_REFERENCE_ID=${3:-}
 CONTEXT_ID=${4:-0}
+NODE_ID=${5:-}
+if [[ ! "$NODE_ID" =~ ^[1-9][0-9]{0,18}$ ]]; then
+  printf 'Scribe requires a positive Islandora node ID.\n' >&2
+  exit 1
+fi
 if [[ ! "$CONTEXT_ID" =~ ^(0|[1-9][0-9]{0,18})$ ]]; then
   printf 'Scribe context ID must be a nonnegative integer.\n' >&2
   exit 1
@@ -108,11 +113,12 @@ jq -nr \
 jq -n \
   --arg batch_id "$BATCH_ID" \
   --arg filename "$FILENAME" \
+  --arg node "$NODE_ID" \
   --arg external_reference_id "$EXTERNAL_REFERENCE_ID" \
   --arg context_id "$CONTEXT_ID" \
   --arg size "$SIZE" \
   --arg digest "$DIGEST" \
-  '{batchId:$batch_id,name:$filename,externalReferenceId:$external_reference_id,files:[{filename:$filename,size:$size,contentSha256:$digest}]} | if $context_id == "0" then . else . + {contextId:$context_id} end' \
+  '{batchId:$batch_id,name:$node,externalReferenceId:$external_reference_id,files:[{filename:$filename,size:$size,contentSha256:$digest}]} | if $context_id == "0" then . else . + {contextId:$context_id} end' \
   > "$TMP_DIR/start-batch.json"
 rpc ItemService/StartUploadBatch "$TMP_DIR/start-batch.json" "$TMP_DIR/start-batch-response.json"
 

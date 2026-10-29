@@ -64,6 +64,7 @@ class Handler(BaseHTTPRequestHandler):
                 assert request["batchId"] == OPERATION
                 assert request["externalReferenceId"] == REFERENCE
                 assert request["contextId"] == "55"
+                assert request["name"] == "1234"
                 assert request["files"][0]["contentSha256"] == hashlib.sha256(IMAGE).hexdigest()
                 response = {"item": {"id": "item-1"}}
             elif method == "UploadItemImage":
