@@ -4,7 +4,7 @@ WORKDIR /app
 
 ARG \
   # renovate: datasource=repology depName=alpine_3_24/ffmpeg
-  FFMPEG_VERSION=8.1.2-r0 \
+  FFMPEG_VERSION=8.1.3-r0 \
   # renovate: datasource=repology depName=alpine_3_24/jq
   JQ_VERSION=1.8.2-r0
 

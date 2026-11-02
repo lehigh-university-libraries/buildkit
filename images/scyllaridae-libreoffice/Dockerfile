@@ -4,7 +4,7 @@ WORKDIR /app
 
 ARG \
   # renovate: datasource=repology depName=alpine_3_24/openjdk17-jre
-  OPENJDK_VERSION=17.0.20_p8-r0 \
+  OPENJDK_VERSION=17.0.21.0.3_p1-r0 \
   # renovate: datasource=repology depName=alpine_3_24/libreoffice
   LIBREOFFICE_VERSION=25.8.7.3-r0 \
   # renovate: datasource=repology depName=alpine_3_24/font-dejavu
