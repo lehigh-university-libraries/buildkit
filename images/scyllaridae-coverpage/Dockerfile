@@ -7,7 +7,7 @@ ARG \
   # renovate: datasource=repology depName=ubuntu_24_04/bash
   BASH_VERSION="5.2.21-2ubuntu4" \
   # renovate: datasource=repology depName=ubuntu_24_04/ghostscript
-  GHOSTSCRIPT_VERSION="10.02.1~dfsg1-0ubuntu7.9" \
+  GHOSTSCRIPT_VERSION="10.02.1~dfsg1-0ubuntu7.10" \
   # renovate: datasource=repology depName=ubuntu_24_04/gosu
   GOSU_VERSION="1.17-1ubuntu0.24.04.3" \
   # renovate: datasource=repology depName=ubuntu_24_04/jq
