@@ -1,6 +1,6 @@
 # Solr 10
 
-Docker image for [solr] version 10.0.0.
+Docker image for [solr] version 10.1.0.
 
 Built from [lehigh-university-libraries/buildkit solr10](https://github.com/lehigh-university-libraries/buildkit/tree/main/images/solr10)
 

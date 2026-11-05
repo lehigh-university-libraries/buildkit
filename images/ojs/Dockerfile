@@ -18,11 +18,11 @@ ARG \
     # renovate: datasource=repology depName=alpine_3_24/poppler-utils
     POPPLER_VERSION=25.12.0-r1 \
     # renovate: datasource=custom.ojs depName=ojs
-    SOFTWARE_VERSION=3.5.0-5
+    SOFTWARE_VERSION=3.5.0-6
 
 ARG FILE=ojs-${SOFTWARE_VERSION}.tar.gz
 ARG URL=https://pkp.sfu.ca/ojs/download/${FILE}
-ARG SHA256="fd59cb1add60ab4e56e40ed843ea43ff84af11f0b64c3940f2e03186ad11445e"
+ARG SHA256="f5b85703b06e45cc82e56ef72b0a8f42a2f75237e5204dbd0146d9730a627c97"
 
 EXPOSE 80
 WORKDIR /var/www/ojs
