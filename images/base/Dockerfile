@@ -32,7 +32,7 @@ ARG \
   # renovate: datasource=repology depName=alpine_3_24/gnupg
   GNUPG_VERSION=2.4.9-r1 \
   # renovate: datasource=repology depName=alpine_3_24/gzip
-  GZIP_VERSION=1.14-r3 \
+  GZIP_VERSION=1.15-r0 \
   # renovate: datasource=repology depName=alpine_3_24/jq
   JQ_VERSION=1.8.2-r0 \
   # renovate: datasource=repology depName=alpine_3_24/mariadb-client
@@ -42,7 +42,7 @@ ARG \
   # renovate: datasource=repology depName=alpine_3_24/openssl
   OPENSSL_VERSION=3.5.9-r0 \
   # renovate: datasource=repology depName=alpine_3_24/patch
-  PATCH_VERSION=2.8-r0 \
+  PATCH_VERSION=2.8.1-r0 \
   # renovate: datasource=repology depName=alpine_3_24/procps-ng
   PROCPS_VERSION=4.0.6-r0 \
   # renovate: datasource=repology depName=alpine_3_24/shadow
