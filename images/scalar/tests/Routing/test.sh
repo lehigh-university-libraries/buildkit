@@ -1,4 +1,5 @@
 #!/command/with-contenv bash
+# shellcheck shell=bash
 set -euo pipefail
 mkdir -p /opt/scalar/book /opt/scalar/system/application/config /opt/scalar/.git
 printf 'media-ok\n' > /opt/scalar/book/media.txt
