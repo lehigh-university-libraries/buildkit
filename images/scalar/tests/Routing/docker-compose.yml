@@ -1,0 +1,7 @@
+name: scalar-routing
+services:
+  scalar:
+    image: ${SCALAR:-lehighlts/scalar:local-php84}
+    volumes:
+      - ./test.sh:/test.sh:ro
+    command: [/test.sh]

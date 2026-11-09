@@ -107,15 +107,17 @@ jobs:
           ./ci/image-metadata.sh "${args[@]}" | tee build-plan.out
           cat build-plan.out >> "$GITHUB_OUTPUT"
 
-          FALLBACK_IMAGES="$(sed -n 's/^images=//p' build-plan.out)"
+          CURRENT_IMAGES="$(sed -n 's/^images=//p' build-plan.out)"
+          FALLBACK_IMAGES="$CURRENT_IMAGES"
           if [ "$EVENT_NAME" = "push" ] &&
              [ "$REF_NAME" != "$DEFAULT_BRANCH" ] &&
              [ "$VERSION_TAGS" != "true" ]; then
             MERGE_BASE="$(git merge-base "$HEAD" "origin/${DEFAULT_BRANCH}")"
-            FALLBACK_IMAGES="$(
+            CUMULATIVE_IMAGES="$(
               ./ci/image-metadata.sh plan --base "$MERGE_BASE" --head "$HEAD" |
                 sed -n 's/^images=//p'
             )"
+            FALLBACK_IMAGES="$(./ci/resolve-fallback-images.sh "$CURRENT_IMAGES" "$CUMULATIVE_IMAGES" "$REF_NAME" lehighlts)"
           fi
           echo "fallback_images=${FALLBACK_IMAGES}" >> "$GITHUB_OUTPUT"
 
