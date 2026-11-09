@@ -7,7 +7,7 @@ OLD_VERSION=$2
 NEW_VERSION=$3
 # These Dockerfiles store bare versions; GitHub release tags include a v.
 case "$DEP" in
-  gha-runner|crosswalk)
+  gha-runner|crosswalk|scalar)
     OLD_VERSION=${OLD_VERSION#v}
     NEW_VERSION=${NEW_VERSION#v}
     ;;
@@ -207,6 +207,11 @@ elif [ "$DEP" = "ojs" ]; then
   URL="https://pkp.sfu.ca/ojs/download/ojs-${NEW_VERSION}.tar.gz"
   ARG="SHA256"
   DOCKERFILES=("images/ojs/Dockerfile")
+
+elif [ "$DEP" = "scalar" ]; then
+  URL="https://github.com/anvc/scalar/archive/refs/tags/v${NEW_VERSION}.tar.gz"
+  ARG="SHA256"
+  DOCKERFILES=("images/scalar/Dockerfile")
 
 elif [ "$DEP" = "omeka-s" ]; then
   URL="https://github.com/omeka/omeka-s/releases/download/v${NEW_VERSION}/omeka-s-${NEW_VERSION}.zip"

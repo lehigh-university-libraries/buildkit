@@ -1,17 +1,25 @@
 #!/command/with-contenv bash
 # shellcheck shell=bash
 set -euo pipefail
-mkdir -p /opt/scalar/book /opt/scalar/system/application/config /opt/scalar/.git
+# The persistent webroot must point at the bundled code, never a host copy.
+grep -Eq "^[0-9]+\.[0-9]+\.[0-9]+$" /usr/share/scalar-version
+test "$(readlink /opt/scalar/system)" = /usr/local/share/scalar/system
+test "$(readlink /opt/scalar/codeigniter.php)" = /usr/local/share/scalar/codeigniter.php
+grep -Fq "define('FCPATH', '/opt/scalar/');" /usr/local/share/scalar/codeigniter.php
+if s6-setuidgid nginx sh -c 'test -w /usr/local/share/scalar/codeigniter.php'; then
+  echo 'Application code must not be writable by PHP-FPM' >&2
+  exit 1
+fi
+s6-setuidgid nginx mkdir /opt/scalar/book
+mkdir -p /opt/scalar/.git
 printf 'media-ok\n' > /opt/scalar/book/media.txt
 printf 'private\n' > /opt/scalar/book/private.sql.gz
 printf 'private\n' > /opt/scalar/book/private.patch
 printf 'private\n' > /opt/scalar/book/shell.php
-printf 'public\n' > /opt/scalar/maintenance.html
 printf 'private\n' > /opt/scalar/README.md
-printf 'private\n' > /opt/scalar/system/application/config/database.php
 printf 'private\n' > /opt/scalar/.git/config
 cat > /opt/scalar/codeigniter.php <<'PHP'
-<?php echo 'route:' . ($_SERVER['PATH_INFO'] ?? '') . ':' . ($_SERVER['HTTPS'] ?? 'off') . ':query:' . ($_SERVER['QUERY_STRING'] ?? '');
+<?php echo 'route:' . ($_SERVER['PATH_INFO'] ?? '') . ':' . ($_SERVER['HTTPS'] ?? 'off') . ':query:' . ($_SERVER['QUERY_STRING'] ?? '') . ':db:' . (getenv('SCALAR_DB_HOSTNAME') ?: 'missing');
 PHP
 for _ in $(seq 1 60); do
   if curl -fsS http://localhost/status | grep -q pool; then break; fi
@@ -19,8 +27,8 @@ for _ in $(seq 1 60); do
 done
 curl -fsS http://localhost/book/media.txt | grep -q media-ok
 curl -fsS http://localhost/book | grep -q 'route:/book:on'
-curl -fsS 'http://localhost/book/story?a=1&b=2' | grep -q 'route:/book/story:on:query:a=1\&b=2'
-curl -fsS http://localhost/maintenance.html | grep -q public
+curl -fsS 'http://localhost/book/story?a=1&b=2' | grep -q 'route:/book/story:on:query:a=1\&b=2:db:staging-db.invalid'
+curl -fsS http://localhost/maintenance.html >/dev/null
 test "$(php -r 'echo ini_get("short_open_tag");')" = 1
 php -m | grep -qx ldap
 php -m | grep -qx mysqli

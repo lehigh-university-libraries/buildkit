@@ -2,6 +2,8 @@ name: scalar-routing
 services:
   scalar:
     image: ${SCALAR:-lehighlts/scalar:local-php84}
+    environment:
+      SCALAR_DB_HOSTNAME: staging-db.invalid
     volumes:
       - ./test.sh:/test.sh:ro
     command: [/test.sh]

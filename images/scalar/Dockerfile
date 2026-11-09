@@ -1,6 +1,21 @@
 # syntax=docker/dockerfile:1.28.0@sha256:bb22d9815c728170f72750f4e5b0d672e06176142e1d602c7e66c050100b7e5b
-# PHP 8.4 is a staging candidate until checked against the deployed installation.
+# PHP compatibility with the existing deployment must be verified before cutover.
 FROM nginx-php84
-WORKDIR /opt/scalar
+ARG TARGETARCH
+# renovate: datasource=github-releases depName=scalar packageName=anvc/scalar
+ARG SOFTWARE_VERSION=2.6.10
+ARG URL=https://github.com/anvc/scalar/archive/refs/tags/v${SOFTWARE_VERSION}.tar.gz
+ARG SHA256="cd6b5bf4b95d05cfd112879c3e72c71f7483d91d2f0e7db214b4e74d0d5e359b"
+WORKDIR /usr/local/share/scalar
+RUN --mount=type=cache,id=scalar-downloads-${TARGETARCH},sharing=locked,target=/opt/downloads \
+    download.sh --url "${URL}" --sha256 "${SHA256}" --strip --dest /usr/local/share/scalar && \
+    grep -F "define('FCPATH', str_replace(SELF, '', __FILE__));" codeigniter.php && \
+    sed -i "s@str_replace(SELF, '', __FILE__)@'/opt/scalar/'@" codeigniter.php && \
+    mkdir -p /opt/scalar /usr/share/licenses/scalar && \
+    chown -R root:root /usr/local/share/scalar && \
+    chmod -R go-w /usr/local/share/scalar && \
+    cp license.txt /usr/share/licenses/scalar/license.txt && \
+    printf '%s\n' "${SOFTWARE_VERSION}" > /usr/share/scalar-version && \
+    cleanup.sh
 COPY --link rootfs /
 HEALTHCHECK CMD curl -fsS http://localhost/status | grep -q pool
