@@ -63,6 +63,7 @@ IMAGES = [
   "mergepdf",
   "nginx-php83",
   "nginx-php84",
+  "scalar-php84",
   "ojs-php83",
   "ojs-php84",
   "omeka-classic-php83",
@@ -116,6 +117,7 @@ PUBLISHED_IMAGES = {
   "mergepdf" = "mergepdf"
   "nginx-php83" = "nginx"
   "nginx-php84" = "nginx"
+  "scalar-php84" = "scalar"
   "ojs-php83" = "ojs"
   "ojs-php84" = "ojs"
   "omeka-classic-php83" = "omeka-classic"
@@ -169,6 +171,7 @@ LOCAL_TAG_SUFFIXES = {
   "mergepdf" = ""
   "nginx-php83" = "php83"
   "nginx-php84" = "php84"
+  "scalar-php84" = "php84"
   "ojs-php83" = "php83"
   "ojs-php84" = "php84"
   "omeka-classic-php83" = "php83"
@@ -222,6 +225,7 @@ DEPENDENCIES = {
   "mergepdf" = ["scyllaridae", "leptonica"]
   "nginx-php83" = ["php83"]
   "nginx-php84" = ["php84"]
+  "scalar-php84" = ["nginx-php84"]
   "ojs-php83" = ["nginx-php83"]
   "ojs-php84" = ["nginx-php84"]
   "omeka-classic-php83" = ["nginx-php83"]
@@ -507,6 +511,11 @@ target "nginx-php84-common" {
   args = {
     PHP_BASE = "php84"
   }
+}
+
+target "scalar-php84-common" {
+  inherits = ["common"]
+  context = context("scalar")
 }
 
 target "ojs-php83-common" {

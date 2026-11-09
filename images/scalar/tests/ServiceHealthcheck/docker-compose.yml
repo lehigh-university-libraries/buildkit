@@ -1,0 +1,4 @@
+name: scalar-servicehealthcheck
+services:
+  scalar:
+    image: ${SCALAR:-lehighlts/scalar:local-php84}
