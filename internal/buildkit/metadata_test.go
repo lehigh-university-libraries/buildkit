@@ -300,6 +300,7 @@ func TestPushWorkflowUsesCumulativeFallbackImagesForBranchTags(t *testing.T) {
 		`DEFAULT_BRANCH: ${{ github.event.repository.default_branch || 'main' }}`,
 		`MERGE_BASE="$(git merge-base "$HEAD" "origin/${DEFAULT_BRANCH}")"`,
 		`./ci/image-metadata.sh plan --base "$MERGE_BASE" --head "$HEAD"`,
+		`./ci/resolve-fallback-images.sh "$CURRENT_IMAGES" "$CUMULATIVE_IMAGES" "$REF_NAME" lehighlts`,
 		`echo "fallback_images=${FALLBACK_IMAGES}" >> "$GITHUB_OUTPUT"`,
 		`build-images: ${{ needs.plan.outputs.fallback_images }}`,
 	} {
@@ -1403,5 +1404,75 @@ func repoRoot(t *testing.T) string {
 			t.Fatal("could not find docker-bake.hcl")
 		}
 		dir = parent
+	}
+}
+
+func TestFallbackImagesRequirePublishedBranchTag(t *testing.T) {
+	dir := t.TempDir()
+	writeExecutable := func(name, contents string) string {
+		t.Helper()
+		path := filepath.Join(dir, name)
+		if err := os.WriteFile(path, []byte(contents), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		return path
+	}
+	metadataTool := writeExecutable("metadata", `#!/bin/sh
+case "$1" in
+  published-image) echo "$2" ;;
+  first-tag) echo "branch-$2" ;;
+  *) exit 1 ;;
+esac
+`)
+	docker := writeExecutable("docker", `#!/bin/sh
+case "$3" in
+  *nginx-php84*) echo 'no such manifest' >&2; exit 1 ;;
+  *php84*) exit 0 ;;
+  *) echo 'unexpected registry query' >&2; exit 1 ;;
+esac
+`)
+	command := exec.Command("bash", filepath.Join(repoRoot(t), "ci/resolve-fallback-images.sh"),
+		`["scalar-php84"]`, `["scalar-php84","nginx-php84","php84"]`, "branch", "lehighlts")
+	command.Env = append(os.Environ(), "METADATA_TOOL="+metadataTool, "DOCKER="+docker)
+	output, err := command.Output()
+	if err != nil {
+		t.Fatalf("resolve available tags: %v", err)
+	}
+	metadata, err := LoadMetadata(repoRoot(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	contexts, err := metadata.Contexts("scalar-php84", "lehighlts", "fallback", "branch", strings.TrimSpace(string(output)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(contexts) != 1 || contexts[0] != "nginx-php84=docker-image://lehighlts/nginx:php84" {
+		t.Fatalf("missing nginx branch tag should use published nginx:php84; got %v (available %s)", contexts, output)
+	}
+	if !strings.Contains(string(output), `"php84"`) || !strings.Contains(string(output), `"scalar-php84"`) {
+		t.Fatalf("existing and current-run tags must remain available: %s", output)
+	}
+
+	// Parents scheduled in this run are built before dependents and must use
+	// the branch tag even when no prior manifest exists.
+	command = exec.Command("bash", filepath.Join(repoRoot(t), "ci/resolve-fallback-images.sh"),
+		`["scalar-php84","nginx-php84"]`, `["scalar-php84","nginx-php84"]`, "branch", "lehighlts")
+	command.Env = append(os.Environ(), "METADATA_TOOL="+metadataTool, "DOCKER="+docker)
+	output, err = command.Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	contexts, err = metadata.Contexts("scalar-php84", "lehighlts", "fallback", "branch", strings.TrimSpace(string(output)))
+	if err != nil || len(contexts) != 1 || contexts[0] != "nginx-php84=docker-image://lehighlts/nginx:branch-php84" {
+		t.Fatalf("current-run parent must use its branch tag; got %v, %v", contexts, err)
+	}
+
+	// A registry outage or authentication failure must not silently choose a different image.
+	writeExecutable("docker", "#!/bin/sh\necho 'registry unavailable' >&2\nexit 1\n")
+	command = exec.Command("bash", filepath.Join(repoRoot(t), "ci/resolve-fallback-images.sh"),
+		`["scalar-php84"]`, `["nginx-php84"]`, "branch", "lehighlts")
+	command.Env = append(os.Environ(), "METADATA_TOOL="+metadataTool, "DOCKER="+docker)
+	if err := command.Run(); err == nil {
+		t.Fatal("registry errors must fail rather than silently fall back")
 	}
 }
