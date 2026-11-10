@@ -1,0 +1,92 @@
+--- a/system/application/models/user_model.php
++++ b/system/application/models/user_model.php
+@@ -164,13 +164,23 @@
+         // Users still use their e-mail address as their Scalar username when using this authentication method.
+         // The LDAP username is assumed to be whatever comes before the '@' sign in the e-mail address.
+         $atpos = strpos($email, '@');
++        if ($atpos === false || $atpos === 0 || $atpos === strlen($email) - 1) {
++            return false;
++        }
+         $uname = substr($email, 0, $atpos);
++        // Reject alternate domains before looking up the local part: otherwise
++        // a typo could create a separate Scalar account for a valid LDAP user.
++        $email_domain = $this->config->item('ldap_email_domain');
++        if ($email_domain && strcasecmp(substr($email, $atpos + 1), $email_domain) !== 0) {
++            return false;
++        }
+ 
+         $ldap_host = $this->config->item('ldap_server');
+         $ldap_port = $this->config->item('ldap_port');
+         $basedn = $this->config->item('ldap_basedn');
+         $uname_field = $this->config->item('ldap_uname_field');
+         $filter = $this->config->item('ldap_filter');
++        $object_class = $this->config->item('ldap_object_class') ?: 'user';
+         $use_ad = $this->config->item('use_ad_ldap');
+         $set_referrals = $this->config->item('set_ldap_referrals');
+         $ad_bind_user = $this->config->item('ad_bind_user');
+@@ -180,7 +190,13 @@
+            return false;
+         }
+ 
+-        $ldapCon = ldap_connect( $ldap_host, $ldap_port );
++        // PHP 8.3 deprecated separate host and port arguments. Keep an explicit
++        // port in the configured URI, otherwise append the configured LDAP port.
++        if (strpos($ldap_host, '://') === false) {
++            $ldap_host = 'ldap://' . $ldap_host;
++        }
++        $ldap_uri = parse_url($ldap_host, PHP_URL_PORT) ? $ldap_host : rtrim($ldap_host, '/') . ':' . $ldap_port;
++        $ldapCon = ldap_connect($ldap_uri);
+         if ( !$ldapCon) {
+             throw new Exception("Unable to connect to LDAP server");
+         }
+@@ -190,7 +206,8 @@
+         if( $set_referrals !== null )
+             ldap_set_option($ldapCon, LDAP_OPT_REFERRALS, (int) $set_referrals );
+ 
+-        if ( !ldap_start_tls($ldapCon) ) {
++        // LDAPS starts encrypted; ldap:// must upgrade with StartTLS before binding.
++        if ( strpos( $ldap_host, 'ldaps://' ) !== 0 && ! ldap_start_tls($ldapCon) ) {
+             throw new Exception('Unable to start TLS on LDAP connection');
+         }
+ 
+@@ -198,9 +215,15 @@
+             $ldapBind = ldap_bind($ldapCon, $ad_bind_user, $ad_bind_pass);
+         }
+ 
+-        $ldapFilter = '(&(objectClass=user)(' . $uname_field . '=' . $uname . ')' . $filter . ')';
++        // Escape filter values derived from input or configuration. The attribute
++        // name and optional filter are trusted administrator-supplied LDAP syntax.
++        $ldapFilter = '(&(objectClass=' . ldap_escape($object_class, '', LDAP_ESCAPE_FILTER) . ')(' . $uname_field . '=' . ldap_escape($uname, '', LDAP_ESCAPE_FILTER) . ')' . $filter . ')';
+ 
+         $ldapSearch = ldap_search($ldapCon, $basedn, $ldapFilter);
++
++		if ( ! $ldapSearch ) {
++			throw new Exception(ldap_error($ldapCon));
++		}
+ 
+         // Found the user, now check the password by trying to bind as that user
+         $info = ldap_get_entries($ldapCon, $ldapSearch);
+--- a/system/application/config/local_settings.php
++++ b/system/application/config/local_settings.php
+@@ -111,15 +111,18 @@
+ $config['privacy_policy'] = '';
+ 
+ // LDAP authentication settings
+-$config['use_ldap'] = (getenv('SCALAR_USE_LDAP') ? getenv('SCALAR_USE_LDAP') : false);  // Default: off
+-$config['ldap_server'] = (getenv('SCALAR_LDAP_SERVER') ? getenv('SCALAR_LDAP_SERVER') : "ldap://ldap.server.name");  // Use 'ldap://' prefix even if connecting to ldaps
++$config['use_ldap'] = getenv('SCALAR_USE_LDAP') ? (getenv('SCALAR_USE_LDAP') === 'true') : false;  // Default: off
++$config['ldap_server'] = (getenv('SCALAR_LDAP_SERVER') ? getenv('SCALAR_LDAP_SERVER') : "ldap://ldap.server.name");  // Use ldap:// for StartTLS or ldaps:// for LDAPS
+ $config['ldap_port'] = (getenv('SCALAR_LDAP_PORT') ? getenv('SCALAR_LDAP_PORT') : 389);
+ $config['ldap_basedn'] = (getenv('SCALAR_LDAP_BASEDN') ? getenv('SCALAR_LDAP_BASEDN') : "dc=organization,dc=tld");
+ $config['ldap_uname_field'] = (getenv('SCALAR_LDAP_UNAME_FIELD') ? getenv('SCALAR_LDAP_UNAME_FIELD') : "uid");  // Default 'uid', For AD use 'sAMAccountName'
+ $config['ldap_filter'] = (getenv('SCALAR_LDAP_FILTER') ? getenv('SCALAR_LDAP_FILTER') : '');
++// Optional: restrict logins to this email domain (case-insensitive).
++$config['ldap_email_domain'] = (getenv('SCALAR_LDAP_EMAIL_DOMAIN') ? getenv('SCALAR_LDAP_EMAIL_DOMAIN') : '');
++$config['ldap_object_class'] = (getenv('SCALAR_LDAP_OBJECT_CLASS') ? getenv('SCALAR_LDAP_OBJECT_CLASS') : 'user');
+ 
+ // Active Directory LDAP settings
+-$config['use_ad_ldap'] = (getenv('SCALAR_USE_AD_LDAP') ? getenv('SCALAR_USE_AD_LDAP') : false);  // Default: off
++$config['use_ad_ldap'] = getenv('SCALAR_USE_AD_LDAP') ? (getenv('SCALAR_USE_AD_LDAP') === 'true') : false;  // Default: off
+ $config['ad_bind_user'] = (getenv('SCALAR_AD_BIND_USER') ? getenv('SCALAR_AD_BIND_USER') : "");  // Use LDAP Distinguished Name
+ $config['ad_bind_pass'] = (getenv('SCALAR_AD_BIND_PASS') ? getenv('SCALAR_AD_BIND_PASS') : "");
+    // explicity enable/disable ldap referrals. Expects 1 or 0. If not set, defaults to previous behavior, which is:

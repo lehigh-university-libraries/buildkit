@@ -4,6 +4,9 @@ services:
     image: ${SCALAR:-lehighlts/scalar:local-php84}
     environment:
       SCALAR_DB_HOSTNAME: staging-db.invalid
+      SCALAR_LDAP_EMAIL_DOMAIN: example.edu
+      SCALAR_LDAP_OBJECT_CLASS: person
     volumes:
       - ./test.sh:/test.sh:ro
+      - ./ldap-auth.php:/ldap-auth.php:ro
     command: [/test.sh]
