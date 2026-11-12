@@ -1,0 +1,36 @@
+name: scalar-runtimeconfiguration
+services:
+  scalar:
+    image: ${SCALAR:-lehighlts/scalar:local-php84}
+    environment:
+      SCALAR_DB_HOSTNAME: config-db.invalid
+      SCALAR_DB_PORT: "3307"
+      SCALAR_DB_USERNAME: test-user
+      SCALAR_DB_DATABASE: test-db
+      SCALAR_DB_PASSWORD: environment-must-lose-to-secret
+      SCALAR_BASE_URL: https://scalar.example.edu/books/
+      SCALAR_ENCRYPTION_KEY: 'encrypt''back\slash$$literal'
+      SCALAR_SHASALT: test-salt
+      SCALAR_LOG_THRESHOLD: "2"
+      SCALAR_SESSION_EXPIRATION: "900"
+      SCALAR_USE_LDAP: "false"
+      SCALAR_USE_AD_LDAP: "false"
+      SCALAR_SET_LDAP_REFERRALS: "0"
+      SCALAR_LDAP_EMAIL_DOMAIN: example.edu
+      SCALAR_LDAP_OBJECT_CLASS: person
+      SCALAR_SMTP_PORT: "587"
+      SCALAR_SMTP_SECURE: tls
+      SCALAR_STRONG_PASSWORD: "false"
+      SCALAR_REGISTER_KEYS: "first,second"
+    secrets:
+      - source: db_password
+        target: SCALAR_DB_PASSWORD
+    volumes:
+      - ./test.sh:/test.sh:ro
+      - ./probe.php:/probe.php:ro
+      - ./db-password:/expected-password:ro
+      - ./upstream-keys.json:/upstream-keys.json:ro
+    command: [/test.sh]
+secrets:
+  db_password:
+    file: ./db-password

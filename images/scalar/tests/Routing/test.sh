@@ -20,7 +20,11 @@ printf 'private\n' > /opt/scalar/book/shell.php
 printf 'private\n' > /opt/scalar/README.md
 printf 'private\n' > /opt/scalar/.git/config
 cat > /opt/scalar/codeigniter.php <<'PHP'
-<?php echo 'route:' . ($_SERVER['PATH_INFO'] ?? '') . ':' . ($_SERVER['HTTPS'] ?? 'off') . ':query:' . ($_SERVER['QUERY_STRING'] ?? '') . ':db:' . (getenv('SCALAR_DB_HOSTNAME') ?: 'missing') . ':ldap:' . getenv('SCALAR_LDAP_EMAIL_DOMAIN') . ':' . getenv('SCALAR_LDAP_OBJECT_CLASS');
+<?php
+define('BASEPATH', '/usr/local/share/scalar/system/');
+require BASEPATH . 'application/config/database.php';
+require BASEPATH . 'application/config/local_settings.php';
+echo 'route:' . ($_SERVER['PATH_INFO'] ?? '') . ':' . ($_SERVER['HTTPS'] ?? 'off') . ':query:' . ($_SERVER['QUERY_STRING'] ?? '') . ':db:' . $db['default']['hostname'] . ':ldap:' . $config['ldap_email_domain'] . ':' . $config['ldap_object_class'];
 PHP
 for _ in $(seq 1 60); do
   if curl -fsS http://localhost/status | grep -q pool; then break; fi

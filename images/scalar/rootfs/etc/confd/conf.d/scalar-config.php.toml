@@ -1,0 +1,8 @@
+[template]
+src = "scalar-config.php.tmpl"
+dest = "/usr/local/share/scalar/system/application/config/config.php"
+uid = 0
+gid = 101
+mode = "0640"
+keys = ["/"]
+check_cmd = "php -l {{.src}} >/dev/null 2>&1"

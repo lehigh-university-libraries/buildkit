@@ -1,0 +1,24 @@
+{{- define "phpString" -}}'{{ replace (replace . "\\" "\\\\" -1) "'" "\\'" -1 }}'{{- end -}}
+<?php defined('BASEPATH') OR exit('No direct script access allowed');
+// Rendered by confd at startup. Never edit generated credentials in the image.
+$active_group = 'default';
+$active_record = true;
+$db['default'] = array(
+    'hostname' => {{ template "phpString" (or (getenv "SCALAR_DB_HOSTNAME") "127.0.0.1") }},
+    'port' => (int) {{ template "phpString" (or (getenv "SCALAR_DB_PORT") "3306") }},
+    'username' => {{ template "phpString" (getenv "SCALAR_DB_USERNAME") }},
+    'password' => {{ template "phpString" (getenv "SCALAR_DB_PASSWORD") }},
+    'database' => {{ template "phpString" (getenv "SCALAR_DB_DATABASE") }},
+    'dbdriver' => 'mysqli',
+    'dbprefix' => {{ template "phpString" (or (getenv "SCALAR_DB_PREFIX") "scalar_db_") }},
+    'pconnect' => false,
+    'db_debug' => false,
+    'cache_on' => false,
+    'cachedir' => '',
+    'char_set' => {{ template "phpString" (or (getenv "SCALAR_DB_CHARSET") "utf8") }},
+    'dbcollat' => {{ template "phpString" (or (getenv "SCALAR_DB_COLLATION") "utf8_general_ci") }},
+    'swap_pre' => '',
+    'autoinit' => true,
+    'stricton' => filter_var({{ template "phpString" (or (getenv "SCALAR_DB_STRICT") "false") }}, FILTER_VALIDATE_BOOLEAN),
+    'ARC_dbprefix' => {{ template "phpString" (or (getenv "SCALAR_ARC_DB_PREFIX") "scalar_store_") }},
+);

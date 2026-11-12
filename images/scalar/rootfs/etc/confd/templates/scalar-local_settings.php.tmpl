@@ -1,0 +1,69 @@
+{{- define "phpString" -}}'{{ replace (replace . "\\" "\\\\" -1) "'" "\\'" -1 }}'{{- end -}}
+<?php defined('BASEPATH') OR exit('No direct script access allowed');
+// Settings are rendered from container environment or /run/secrets by confd.
+$config['active_dashboard'] = {{ template "phpString" (or (getenv "SCALAR_ACTIVE_DASHBOARD") "dashboard") }};
+$config['active_melon'] = {{ template "phpString" (or (getenv "SCALAR_ACTIVE_MELON") "cantaloupe") }};
+$config['active_book_list'] = {{ template "phpString" (or (getenv "SCALAR_ACTIVE_BOOK_LIST") "book_list") }};
+$config['active_cover'] = {{ template "phpString" (or (getenv "SCALAR_ACTIVE_COVER") "cover") }};
+$config['shasalt'] = {{ template "phpString" (getenv "SCALAR_SHASALT") }};
+$config['google_authenticator_salt'] = {{ template "phpString" (getenv "SCALAR_GOOGLE_AUTHENTICATOR_SALT") }};
+$config['default_stylesheet'] = {{ template "phpString" (or (getenv "SCALAR_DEFAULT_STYLESHEET") "minimal") }};
+$config['index_msg'] = {{ template "phpString" (getenv "SCALAR_INDEX_MESSAGE") }};
+$config['book_msg'] = {{ template "phpString" (getenv "SCALAR_BOOK_MESSAGE") }};
+$config['book_msg_cookie_name'] = {{ template "phpString" (or (getenv "SCALAR_BOOK_MESSAGE_COOKIE_NAME") "ci_hide_scalar_book_msg") }};
+$config['registration_key_msg'] = {{ template "phpString" (getenv "SCALAR_REGISTRATION_KEY_MESSAGE") }};
+$config['terms_of_service'] = {{ template "phpString" (getenv "SCALAR_TERMS_OF_SERVICE") }};
+$config['privacy_policy'] = {{ template "phpString" (getenv "SCALAR_PRIVACY_POLICY") }};
+$config['ldap_server'] = {{ template "phpString" (getenv "SCALAR_LDAP_SERVER") }};
+$config['ldap_basedn'] = {{ template "phpString" (getenv "SCALAR_LDAP_BASEDN") }};
+$config['ldap_uname_field'] = {{ template "phpString" (or (getenv "SCALAR_LDAP_UNAME_FIELD") "uid") }};
+$config['ldap_filter'] = {{ template "phpString" (getenv "SCALAR_LDAP_FILTER") }};
+$config['ldap_email_domain'] = {{ template "phpString" (getenv "SCALAR_LDAP_EMAIL_DOMAIN") }};
+$config['ldap_object_class'] = {{ template "phpString" (or (getenv "SCALAR_LDAP_OBJECT_CLASS") "user") }};
+$config['ad_bind_user'] = {{ template "phpString" (getenv "SCALAR_AD_BIND_USER") }};
+$config['ad_bind_pass'] = {{ template "phpString" (getenv "SCALAR_AD_BIND_PASS") }};
+$config['smtp_secure'] = {{ template "phpString" (or (getenv "SCALAR_SMTP_SECURE") "ssl") }};
+$config['recaptcha_public_key'] = {{ template "phpString" (getenv "SCALAR_RECAPTCHA_PUBLIC_KEY") }};
+$config['recaptcha_private_key'] = {{ template "phpString" (getenv "SCALAR_RECAPTCHA_PRIVATE_KEY") }};
+$config['recaptcha2_site_key'] = {{ template "phpString" (getenv "SCALAR_RECAPTCHA2_SITE_KEY") }};
+$config['recaptcha2_secret_key'] = {{ template "phpString" (getenv "SCALAR_RECAPTCHA2_SECRET_KEY") }};
+$config['soundcloud_id'] = {{ template "phpString" (getenv "SCALAR_SOUNDCLOUD_ID") }};
+$config['google_maps_key'] = {{ template "phpString" (getenv "SCALAR_GOOGLE_MAPS_KEY") }};
+$config['youtube_data_key'] = {{ template "phpString" (getenv "SCALAR_YOUTUBE_DATA_KEY") }};
+$config['flowplayer_key'] = {{ template "phpString" (getenv "SCALAR_FLOWPLAYER_KEY") }};
+$config['dpla_key'] = {{ template "phpString" (getenv "SCALAR_DPLA_KEY") }};
+$config['nypl_key'] = {{ template "phpString" (getenv "SCALAR_NYPL_KEY") }};
+$config['harvard_art_museums_key'] = {{ template "phpString" (getenv "HAM_API_KEY") }};
+$config['email_replyto_address'] = {{ template "phpString" (getenv "SCALAR_EMAIL_REPLYTO_ADDRESS") }};
+$config['email_replyto_name'] = {{ template "phpString" (getenv "SCALAR_EMAIL_REPLYTO_NAME") }};
+$config['email_from_address'] = {{ template "phpString" (getenv "SCALAR_EMAIL_FROM_ADDRESS") }};
+$config['smtp_host'] = {{ template "phpString" (getenv "SCALAR_SMTP_HOST") }};
+$config['smtp_username'] = {{ template "phpString" (getenv "SCALAR_SMTP_USERNAME") }};
+$config['smtp_password'] = {{ template "phpString" (getenv "SCALAR_SMTP_PASSWORD") }};
+$config['ldap_port'] = (int) {{ template "phpString" (or (getenv "SCALAR_LDAP_PORT") "389") }};
+$config['max_login_attempts'] = (int) {{ template "phpString" (or (getenv "SCALAR_MAX_LOGIN_ATTEMPTS") "6") }};
+$config['max_login_attempts_penalty_seconds'] = (int) {{ template "phpString" (or (getenv "SCALAR_LOGIN_PENALTY_SECONDS") "120") }};
+$config['strong_password_days_to_reset'] = (int) {{ template "phpString" (or (getenv "SCALAR_PASSWORD_RESET_DAYS") "60") }};
+$config['smtp_port'] = (int) {{ template "phpString" (or (getenv "SCALAR_SMTP_PORT") "465") }};
+$config['user_history_max_records'] = (int) {{ template "phpString" (or (getenv "SCALAR_USER_HISTORY_MAX_RECORDS") "20") }};
+$config['use_ldap'] = filter_var({{ template "phpString" (or (getenv "SCALAR_USE_LDAP") "false") }}, FILTER_VALIDATE_BOOLEAN);
+$config['use_ad_ldap'] = filter_var({{ template "phpString" (or (getenv "SCALAR_USE_AD_LDAP") "false") }}, FILTER_VALIDATE_BOOLEAN);
+$config['strong_password'] = filter_var({{ template "phpString" (or (getenv "SCALAR_STRONG_PASSWORD") "false") }}, FILTER_VALIDATE_BOOLEAN);
+$config['smtp_auth'] = filter_var({{ template "phpString" (or (getenv "SCALAR_SMTP_AUTH") "true") }}, FILTER_VALIDATE_BOOLEAN);
+$config['external_direct_hyperlink'] = filter_var({{ template "phpString" (or (getenv "SCALAR_EXTERNAL_DIRECT_HYPERLINK") "false") }}, FILTER_VALIDATE_BOOLEAN);
+$config['index_render_published'] = filter_var({{ template "phpString" (or (getenv "SCALAR_INDEX_RENDER_PUBLISHED") "true") }}, FILTER_VALIDATE_BOOLEAN);
+$config['index_hide_published'] = filter_var({{ template "phpString" (or (getenv "SCALAR_INDEX_HIDE_PUBLISHED") "true") }}, FILTER_VALIDATE_BOOLEAN);
+$referrals = {{ template "phpString" (getenv "SCALAR_SET_LDAP_REFERRALS") }};
+$config['set_ldap_referrals'] = $referrals === '' ? ($config['use_ad_ldap'] ? 0 : null) : (int) $referrals;
+$config['register_key'] = array_values(array_filter(explode(',', {{ template "phpString" (getenv "SCALAR_REGISTER_KEYS") }}), 'strlen'));
+$config['iframe_redlist'] = array_values(array_filter(explode(',', {{ template "phpString" (or (getenv "SCALAR_IFRAME_REDLIST") "youtube.com,vimeo.com,google.com,microsoft.com,metmuseum.org,bloomberg.com,nytimes.com,nationalreview.com,theguardian.com,twitter.com") }}), 'strlen'));
+$config['chmod_mode'] = intval({{ template "phpString" (or (getenv "SCALAR_DIRECTORY_MODE") "0775") }}, 8);
+$config['storage_adapter'] = 'Scalar_Storage_Adapter_Filesystem';
+$config['storage_adapter_options'] = array(
+    'fileMode' => intval({{ template "phpString" (or (getenv "SCALAR_FILE_MODE") "0664") }}, 8),
+    'dirMode' => $config['chmod_mode'],
+    'localDir' => '',
+);
+$config['override_edit_page_default_tab'] = array(
+    'book_0' => array('composite' => '#metadata-pane', 'media' => '#metadata-pane'),
+);

@@ -19,3 +19,5 @@ done
 # Allow PHP-FPM to create books but not unlink the root-owned application links.
 chown root:nginx /opt/scalar
 chmod 1775 /opt/scalar
+# Disposable application cache stays outside the immutable application code.
+install -d -o nginx -g nginx -m 0750 /run/scalar/cache

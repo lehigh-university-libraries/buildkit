@@ -1,0 +1,54 @@
+{{- define "phpString" -}}'{{ replace (replace . "\\" "\\\\" -1) "'" "\\'" -1 }}'{{- end -}}
+<?php defined('BASEPATH') OR exit('No direct script access allowed');
+// Canonical origin is operator-owned, never derived from Host/forwarding headers.
+$config['base_url'] = rtrim({{ template "phpString" (or (getenv "SCALAR_BASE_URL") "https://scalar.lehigh.edu") }}, '/') . '/';
+$url = parse_url($config['base_url']);
+if (!$url || !isset($url['host'], $url['scheme']) || !in_array($url['scheme'], array('http', 'https'), true)
+    || isset($url['user']) || isset($url['pass']) || isset($url['query']) || isset($url['fragment'])) {
+    throw new RuntimeException('SCALAR_BASE_URL must be an absolute HTTP(S) URL without credentials, query, or fragment');
+}
+$config['is_https'] = $url['scheme'] === 'https';
+$config['index_page'] = '';
+$config['uri_protocol'] = 'PATH_INFO';
+$config['url_suffix'] = '';
+$config['charset'] = 'UTF-8';
+$config['enable_hooks'] = false;
+$config['subclass_prefix'] = 'MY_';
+$config['permitted_uri_chars'] = 'a-z 0-9~%.:_\-';
+$config['allow_get_array'] = true;
+$config['enable_query_strings'] = false;
+$config['controller_trigger'] = 'c';
+$config['function_trigger'] = 'm';
+$config['directory_trigger'] = 'd';
+$config['log_path'] = '';
+$config['cache_path'] = '/run/scalar/cache/';
+$config['sess_encrypt_cookie'] = true;
+$config['sess_use_database'] = true;
+$config['global_xss_filtering'] = false;
+$config['compress_output'] = false;
+$config['rewrite_short_tags'] = true;
+$config['language'] = {{ template "phpString" (or (getenv "SCALAR_LANGUAGE") "en") }};
+$config['log_date_format'] = {{ template "phpString" (or (getenv "SCALAR_LOG_DATE_FORMAT") "Y-m-d H:i:s") }};
+$config['encryption_key'] = {{ template "phpString" (getenv "SCALAR_ENCRYPTION_KEY") }};
+$config['sess_cookie_name'] = {{ template "phpString" (or (getenv "SCALAR_SESSION_COOKIE_NAME") "ci_session") }};
+$config['sess_table_name'] = {{ template "phpString" (or (getenv "SCALAR_SESSION_TABLE_NAME") "scalar_db_sessions") }};
+$config['cookie_prefix'] = {{ template "phpString" (getenv "SCALAR_COOKIE_PREFIX") }};
+$config['cookie_domain'] = {{ template "phpString" (getenv "SCALAR_COOKIE_DOMAIN") }};
+$config['cookie_path'] = {{ template "phpString" (or (getenv "SCALAR_COOKIE_PATH") "/") }};
+$config['csrf_token_name'] = {{ template "phpString" (or (getenv "SCALAR_CSRF_TOKEN_NAME") "csrf_test_name") }};
+$config['csrf_cookie_name'] = {{ template "phpString" (or (getenv "SCALAR_CSRF_COOKIE_NAME") "csrf_cookie_name") }};
+$config['time_reference'] = {{ template "phpString" (or (getenv "SCALAR_TIME_REFERENCE") "local") }};
+$config['proxy_ips'] = {{ template "phpString" (getenv "SCALAR_PROXY_IPS") }};
+$config['media_url'] = {{ template "phpString" (getenv "MEDIA_URL") }};
+$config['log_threshold'] = (int) {{ template "phpString" (or (getenv "SCALAR_LOG_THRESHOLD") "1") }};
+$config['sess_expiration'] = (int) {{ template "phpString" (or (getenv "SCALAR_SESSION_EXPIRATION") "14400") }};
+$config['sess_time_to_update'] = (int) {{ template "phpString" (or (getenv "SCALAR_SESSION_UPDATE_INTERVAL") "300") }};
+$config['csrf_expire'] = (int) {{ template "phpString" (or (getenv "SCALAR_CSRF_EXPIRATION") "7200") }};
+$config['sess_expire_on_close'] = filter_var({{ template "phpString" (or (getenv "SCALAR_SESSION_EXPIRE_ON_CLOSE") "false") }}, FILTER_VALIDATE_BOOLEAN);
+$config['sess_match_ip'] = filter_var({{ template "phpString" (or (getenv "SCALAR_SESSION_MATCH_IP") "false") }}, FILTER_VALIDATE_BOOLEAN);
+$config['sess_match_useragent'] = filter_var({{ template "phpString" (or (getenv "SCALAR_SESSION_MATCH_USERAGENT") "true") }}, FILTER_VALIDATE_BOOLEAN);
+$config['cookie_secure'] = filter_var({{ template "phpString" (or (getenv "SCALAR_COOKIE_SECURE") "true") }}, FILTER_VALIDATE_BOOLEAN);
+$config['csrf_protection'] = filter_var({{ template "phpString" (or (getenv "SCALAR_CSRF_PROTECTION") "false") }}, FILTER_VALIDATE_BOOLEAN);
+spl_autoload_register(function ($class) {
+    require_once __DIR__ . '/../arc/vendor/autoload.php';
+});
