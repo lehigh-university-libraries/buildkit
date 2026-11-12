@@ -9,4 +9,5 @@ services:
     volumes:
       - ./test.sh:/test.sh:ro
       - ./ldap-auth.php:/ldap-auth.php:ro
+      - ./asset-paths.php:/asset-paths.php:ro
     command: [/test.sh]

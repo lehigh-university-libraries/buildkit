@@ -4,6 +4,7 @@ set -euo pipefail
 # The persistent webroot must point at the bundled code, never a host copy.
 grep -Eq "^[0-9]+\.[0-9]+\.[0-9]+$" /usr/share/scalar-version
 php -n /ldap-auth.php
+php -n /asset-paths.php
 test "$(readlink /opt/scalar/system)" = /usr/local/share/scalar/system
 test "$(readlink /opt/scalar/codeigniter.php)" = /usr/local/share/scalar/codeigniter.php
 grep -Fq "define('FCPATH', '/opt/scalar/');" /usr/local/share/scalar/codeigniter.php

@@ -9,11 +9,13 @@ ARG SHA256="cd6b5bf4b95d05cfd112879c3e72c71f7483d91d2f0e7db214b4e74d0d5e359b"
 WORKDIR /usr/local/share/scalar
 # Backport anvc/scalar#272 and its upstream LDAPS prerequisites to 2.6.10.
 COPY patches/272-ldap.patch /tmp/scalar-ldap.patch
+COPY patches/asset-paths.patch /tmp/scalar-asset-paths.patch
 RUN --mount=type=cache,id=scalar-downloads-${TARGETARCH},sharing=locked,target=/opt/downloads \
     download.sh --url "${URL}" --sha256 "${SHA256}" --strip --dest /usr/local/share/scalar && \
-    dos2unix system/application/models/user_model.php system/application/config/local_settings.php && \
+    dos2unix system/application/models/user_model.php system/application/config/local_settings.php system/application/helpers/MY_html_helper.php && \
     patch --batch --forward -p1 < /tmp/scalar-ldap.patch && \
-    rm /tmp/scalar-ldap.patch && \
+    patch --batch --forward -p1 < /tmp/scalar-asset-paths.patch && \
+    rm /tmp/scalar-ldap.patch /tmp/scalar-asset-paths.patch && \
     grep -F "define('FCPATH', str_replace(SELF, '', __FILE__));" codeigniter.php && \
     sed -i "s@str_replace(SELF, '', __FILE__)@'/opt/scalar/'@" codeigniter.php && \
     mkdir -p /opt/scalar /usr/share/licenses/scalar && \
