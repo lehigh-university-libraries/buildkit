@@ -17,7 +17,7 @@ ARG \
     # renovate: datasource=repology depName=alpine_3_24/jemalloc
     JEMALLOC_VERSION=5.3.0-r6 \
     # renovate: datasource=repology depName=alpine_3_24/nodejs
-    NODEJS_VERSION=24.22.1-r1 \
+    NODEJS_VERSION=24.22.3-r0 \
     # renovate: datasource=repology depName=alpine_3_24/shared-mime-info
     SHARED_MIME_INFO_VERSION=2.4-r7 \
     # renovate: datasource=repology depName=alpine_3_24/unzip
