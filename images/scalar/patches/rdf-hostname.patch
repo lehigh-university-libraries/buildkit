@@ -1,0 +1,5 @@
+--- a/system/application/libraries/RDF_Store.php
++++ b/system/application/libraries/RDF_Store.php
+@@ -39,1 +39,1 @@
+-		if ($ci->db->port != '') {
++		if ($ci->db->port != '' && strpos($ci->db->hostname, ':') !== false) {

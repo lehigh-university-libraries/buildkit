@@ -10,4 +10,6 @@ services:
       - ./test.sh:/test.sh:ro
       - ./ldap-auth.php:/ldap-auth.php:ro
       - ./asset-paths.php:/asset-paths.php:ro
+      - ./mcrypt.php:/mcrypt.php:ro
+      - ./rdf-hostname.php:/rdf-hostname.php:ro
     command: [/test.sh]
