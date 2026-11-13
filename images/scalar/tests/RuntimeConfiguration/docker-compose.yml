@@ -12,6 +12,7 @@ services:
       SCALAR_ENCRYPTION_KEY: 'encrypt''back\slash$$literal'
       SCALAR_SHASALT: test-salt
       SCALAR_LOG_THRESHOLD: "2"
+      SCALAR_PHP_ERROR_REPORTING: "4437"
       SCALAR_SESSION_EXPIRATION: "900"
       SCALAR_USE_LDAP: "false"
       SCALAR_USE_AD_LDAP: "false"

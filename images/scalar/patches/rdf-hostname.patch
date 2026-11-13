@@ -1,5 +1,11 @@
 --- a/system/application/libraries/RDF_Store.php
 +++ b/system/application/libraries/RDF_Store.php
-@@ -39,1 +39,1 @@
+@@ -36,7 +36,7 @@
+ 
+ 		$ci=& get_instance();
+ 
 -		if ($ci->db->port != '') {
 +		if ($ci->db->port != '' && strpos($ci->db->hostname, ':') !== false) {
+ 			$hostname_port = $ci->db->hostname;
+ 			$hostname = strstr($hostname_port, ':', true);
+ 		} else {

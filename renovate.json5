@@ -204,6 +204,7 @@
     {
       matchDepNames: [
         'islandora-workbench',
+        'scalar',
       ],
       allowedVersions: null,
     },

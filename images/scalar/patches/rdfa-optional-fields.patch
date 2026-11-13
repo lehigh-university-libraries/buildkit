@@ -1,0 +1,20 @@
+--- a/system/application/views/arbors/html5_RDFa/wrapper.php
++++ b/system/application/views/arbors/html5_RDFa/wrapper.php
+@@ -419,7 +419,7 @@
+ <?
+ 		foreach ($outward_array as $outward_item):
+ 			if (!$outward_item->is_live) continue;
+-			$outward_item->versions[$outward_item->version_index]->sort_number =@ (int) $outward_item->page_index;
++			$outward_item->versions[$outward_item->version_index]->sort_number = (int) ($outward_item->page_index ?? 0);
+ 			if ('paths'==$rel) $outward_item->versions[0]->sort_number =@ $outward_item->versions[0]->page_num;
+ 			if ('replies'==$rel) $outward_item->versions[$outward_item->version_index]->datetime =@ $outward_item->versions[$outward_item->version_index]->created;
+ ?>
+@@ -437,7 +437,7 @@
+ 					<span property="dcterms:title" content="<?=htmlspecialchars($outward_item->versions[$outward_item->version_index]->title)?>">
+ 						<a href="<?=$base_uri.$outward_item->slug?>"><?=$outward_item->versions[$outward_item->version_index]->title?></a>
+ 					</span>
+-					<span inert property="scalar:fullname"><?=@$outward_item->versions[$outward_item->version_index]->fullname?></span>
++					<span inert property="scalar:fullname"><?=$outward_item->versions[$outward_item->version_index]->fullname ?? ''?></span>
+ <?
+ 		print_rdf($this->versions->rdf($outward_item->versions[$outward_item->version_index]), 5, $ns);
+ 		if ($output_outward_content) echo "\t\t\t\t\t".'<span class="metadata" property="'.$rdf_fields['content'].'">'.$outward_item->versions[$outward_item->version_index]->content.'</span>'."\n";

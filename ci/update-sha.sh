@@ -7,7 +7,7 @@ OLD_VERSION=$2
 NEW_VERSION=$3
 # These Dockerfiles store bare versions; GitHub release tags include a v.
 case "$DEP" in
-  gha-runner|crosswalk|scalar)
+  gha-runner|crosswalk)
     OLD_VERSION=${OLD_VERSION#v}
     NEW_VERSION=${NEW_VERSION#v}
     ;;
@@ -209,7 +209,11 @@ elif [ "$DEP" = "ojs" ]; then
   DOCKERFILES=("images/ojs/Dockerfile")
 
 elif [ "$DEP" = "scalar" ]; then
-  URL="https://github.com/anvc/scalar/archive/refs/tags/v${NEW_VERSION}.tar.gz"
+  if [[ ! "$4" =~ ^[0-9a-f]{40}$ ]]; then
+    echo "Scalar updates require a full commit SHA in newDigest" >&2
+    exit 1
+  fi
+  URL="https://github.com/anvc/scalar/archive/${4}.tar.gz"
   ARG="SHA256"
   DOCKERFILES=("images/scalar/Dockerfile")
 

@@ -5,6 +5,8 @@
 # in Unix via a file share from Windows, the scripts will work.
 *.bat text eol=crlf diff=batch
 *.patch text eol=lf diff=batch
+# Unified patch context preserves upstream whitespace verbatim.
+images/scalar/patches/*.patch whitespace=-blank-at-eol,-space-before-tab,-blank-at-eof
 *.properties text eol=lf
 *.sh text eol=lf diff=bash
 *.toml text eol=lf diff=bash

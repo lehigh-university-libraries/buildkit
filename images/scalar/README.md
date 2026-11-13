@@ -62,6 +62,7 @@ Rendered into `config.php`.
 | `SCALAR_LANGUAGE` | `en` |
 | `SCALAR_LOG_DATE_FORMAT` | `Y-m-d H:i:s` |
 | `SCALAR_LOG_THRESHOLD` | `1` |
+| `SCALAR_PHP_ERROR_REPORTING` | `32767` (all PHP severities) |
 | `SCALAR_PROXY_IPS` | empty |
 | `SCALAR_SESSION_COOKIE_NAME` | `ci_session` |
 | `SCALAR_SESSION_EXPIRATION` | `14400` |
@@ -154,11 +155,53 @@ The image does not enable arbitrary PHP config overrides from book storage.
 
 ## Upstream baseline
 
-Verified on 2026-11-12 against the latest release,
-[anvc/scalar v2.6.10](https://github.com/anvc/scalar/releases/tag/v2.6.10).
-The source files are `system/application/config/{database,config,local_settings}.php`
-in that release. `database.php` and `config.php` are identical on upstream
-master `daf68e2cca8e89d5c39d52ac606dd129e880bf0d`; the only local-settings
-changes there are the LDAP boolean fixes already backported in this image.
-The RuntimeConfiguration test inventories every upstream setting and requires
-an explicit baseline review when the bundled application version changes.
+The image bundles upstream master commit
+[`daf68e2cca8e89d5c39d52ac606dd129e880bf0d`](https://github.com/anvc/scalar/commit/daf68e2cca8e89d5c39d52ac606dd129e880bf0d),
+verified on 2026-11-13. Upstream identifies this snapshot as **2.6.12**; it is
+not a tagged 2.6.12 release. The source archive has a pinned SHA256 checksum.
+`/usr/share/scalar-version` and `/usr/share/scalar-revision` record both values.
+The build rejects a source version that differs from `SOFTWARE_VERSION`.
+
+Renovate follows master's commit digest and recalculates the archive checksum.
+When updating the pin, review upstream's `scalar-version.php`, update
+`SOFTWARE_VERSION` if needed, and refresh the version/revision and active config
+keys in `tests/RuntimeConfiguration/upstream-keys.json`. Commented configuration
+examples are not active defaults. Tests require this review even when upstream
+keeps the same version number. Patches apply with zero fuzz; an upstream change
+that makes a patch obsolete must be reviewed rather than silently skipped.
+
+### Compatibility patches and upstream contributions
+
+Each patch in `patches/` is rebased directly against the pinned upstream source:
+
+| Patch | Purpose |
+|---|---|
+| `272-ldap.patch` | Remaining LDAP domain/object-class support, filter escaping, and URI-based connection API. Master already supplies boolean parsing, LDAPS handling, and failed-search handling. |
+| `asset-paths.patch` | Generate public asset URLs when application code and writable book data have separate filesystem roots. |
+| `mcrypt-properties.patch` | Declare compatibility-layer state instead of creating deprecated dynamic properties. |
+| `rdf-hostname.patch` | Preserve a database hostname when the port is supplied separately. |
+| `php-deprecations.patch` | Preserve the legacy strict-error category without referencing the deprecated PHP constant. Master's null-JSON fix is used directly. |
+| `rdfa-optional-fields.patch` | Render optional RDFa fields without undefined-property warnings. |
+| `arc2-xml-callables.patch` | Register direct XML method callbacks in all four ARC2 XML parsers for PHP 8.4. |
+
+The mcrypt and XML parser changes affect bundled third-party libraries; they
+should also be considered for their upstream projects. The other compatibility
+fixes belong in Scalar. The regression fixtures in `tests/Routing/` exercise
+these changes independently of production credentials or external services.
+
+Container-specific confd rendering, stderr logging, canonical origin, file
+permissions, and Nginx buffers remain in `rootfs/`, separate from upstream
+compatibility patches. No upstream PRs have been opened by this change.
+
+### PHP log severity
+
+`SCALAR_PHP_ERROR_REPORTING` accepts a numeric PHP error-reporting bitmask.
+Use `4437` for fatal/error categories (`E_ERROR`, `E_PARSE`, `E_CORE_ERROR`,
+`E_COMPILE_ERROR`, `E_USER_ERROR`, `E_RECOVERABLE_ERROR`), or `32767` to include
+warnings, notices, and deprecations. `0` disables PHP error logging through
+Scalar's error handler. The mask applies to native PHP reporting and
+CodeIgniter's PHP-error logger; application messages such as login events still
+follow `SCALAR_LOG_THRESHOLD`. Logs continue to go to stderr. The deployment
+Compose defaults to `4437`; the image defaults to `32767`. Recreate Scalar after
+changing the setting. This requires an image built with the severity-filter
+support; PHP-FPM does not read application environment variables directly.

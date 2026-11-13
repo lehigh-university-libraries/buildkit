@@ -1,5 +1,5 @@
 {
-  "version": "2.6.10",
+  "version": "2.6.12",
   "files": {
     "config.php": [
       "allow_get_array",
@@ -122,5 +122,6 @@
       "user_history_max_records",
       "youtube_data_key"
     ]
-  }
+  },
+  "revision": "daf68e2cca8e89d5c39d52ac606dd129e880bf0d"
 }

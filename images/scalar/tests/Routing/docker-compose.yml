@@ -12,4 +12,6 @@ services:
       - ./asset-paths.php:/asset-paths.php:ro
       - ./mcrypt.php:/mcrypt.php:ro
       - ./rdf-hostname.php:/rdf-hostname.php:ro
+      - ./rdfa-optional-fields.php:/rdfa-optional-fields.php:ro
+      - ./arc2-xml.php:/arc2-xml.php:ro
     command: [/test.sh]

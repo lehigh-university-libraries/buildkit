@@ -41,6 +41,8 @@ $config['time_reference'] = {{ template "phpString" (or (getenv "SCALAR_TIME_REF
 $config['proxy_ips'] = {{ template "phpString" (getenv "SCALAR_PROXY_IPS") }};
 $config['media_url'] = {{ template "phpString" (getenv "MEDIA_URL") }};
 $config['log_threshold'] = (int) {{ template "phpString" (or (getenv "SCALAR_LOG_THRESHOLD") "1") }};
+$config['php_error_reporting'] = (int) {{ template "phpString" (or (getenv "SCALAR_PHP_ERROR_REPORTING") "32767") }};
+error_reporting($config['php_error_reporting']);
 $config['sess_expiration'] = (int) {{ template "phpString" (or (getenv "SCALAR_SESSION_EXPIRATION") "14400") }};
 $config['sess_time_to_update'] = (int) {{ template "phpString" (or (getenv "SCALAR_SESSION_UPDATE_INTERVAL") "300") }};
 $config['csrf_expire'] = (int) {{ template "phpString" (or (getenv "SCALAR_CSRF_EXPIRATION") "7200") }};

@@ -75,3 +75,11 @@ for (const minor of [13, 14]) {
   assert(allowed.test(dockerfile.match(/^FROM python:([^@]+)/)[1]));
 }
 console.log(`Renovate extraction checks passed for ${dependencies} distribution dependencies.`);
+
+// Scalar follows master by digest; its checksum hook must not fetch a release tag.
+const scalar = fs.readFileSync(path.join(root, 'images/scalar/Dockerfile'), 'utf8');
+const scalarPin = new RegExp(manager.matchStrings[1]).exec(scalar);
+assert.equal(scalarPin?.groups.depName, 'scalar');
+assert.equal(scalarPin.groups.currentValue, 'master');
+assert.match(scalarPin.groups.currentDigest, /^[a-f0-9]{40}$/);
+assert(config.packageRules.some(r => r.matchDepNames?.includes('scalar') && r.allowedVersions === null));

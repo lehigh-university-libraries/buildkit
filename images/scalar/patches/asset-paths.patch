@@ -1,8 +1,20 @@
 --- a/system/application/helpers/MY_html_helper.php
 +++ b/system/application/helpers/MY_html_helper.php
-@@ -62,1 +62,1 @@
+@@ -59,7 +59,7 @@
+ 
+ function url_from_file($rel='') {
+ 	
 -    $rel = dirname(str_replace(FCPATH, base_url(), $rel));
 +    $rel = dirname(str_replace(array(FCPATH, dirname(BASEPATH).'/'), base_url(), $rel));
-@@ -70,1 +70,1 @@
+ 	$rel = str_replace('\\', '/', $rel).'/';
+ 	return $rel;
+ 	
+@@ -67,7 +67,7 @@
+ 
+ function path_from_file($rel='') {
+ 	
 -    $rel = dirname(str_replace(FCPATH, '', $rel));
 +    $rel = dirname(str_replace(array(FCPATH, dirname(BASEPATH).'/'), '', $rel));
+ 	$rel = str_replace('\\', '/', $rel).'/';
+ 	return $rel;
+ 	

@@ -12,7 +12,8 @@ function check($condition, $message) {
     }
 }
 $baseline = json_decode(file_get_contents('/upstream-keys.json'), true);
-check(trim(file_get_contents('/usr/share/scalar-version')) === $baseline['version'], 'Review templates against the new upstream release');
+check(trim(file_get_contents('/usr/share/scalar-version')) === $baseline['version'], 'Review templates against the new upstream version');
+check(trim(file_get_contents('/usr/share/scalar-revision')) === $baseline['revision'], 'Review templates against the new upstream commit');
 foreach ($baseline['files'] as $file => $keys) {
     foreach ($keys as $key) {
         check(array_key_exists($key, $file === 'database.php' ? $db['default'] : $config), 'Missing upstream setting: ' . $key);
@@ -45,5 +46,20 @@ $logger = new MY_Log();
 check($logger->write_log('error', 'scalar-application-stderr-probe'), 'Application logging failed');
 check($logger->write_log('debug', 'scalar-debug-stderr-probe'), 'Configured logging threshold ignored');
 check(!$logger->write_log('info', 'must-not-log-info'), 'Log threshold not enforced');
+check($config['php_error_reporting'] === 4437 && error_reporting() === 4437, 'PHP severity mask not rendered');
+function config_item($name) { global $config; return $config[$name] ?? null; }
+// Capture CodeIgniter's logging calls independently of the native PHP mask.
+function log_message($level, $message, $php_error = false) { $GLOBALS['php_messages'][] = $message; }
+require BASEPATH . 'core/Exceptions.php';
+require APPPATH . 'libraries/MY_Exceptions.php';
+$exceptions = new MY_Exceptions();
+$GLOBALS['php_messages'] = array();
+$exceptions->log_exception(E_WARNING, 'must-not-log-warning', __FILE__, __LINE__);
+$exceptions->log_exception(E_DEPRECATED, 'must-not-log-deprecation', __FILE__, __LINE__);
+$exceptions->log_exception(E_USER_ERROR, 'keep-fatal-error', __FILE__, __LINE__);
+check(count($GLOBALS['php_messages']) === 1 && strpos($GLOBALS['php_messages'][0], 'keep-fatal-error') !== false, 'PHP severity filter failed');
+$config['php_error_reporting'] = 32767;
+$exceptions->log_exception(E_WARNING, 'keep-warning-with-all-mask', __FILE__, __LINE__);
+check(count($GLOBALS['php_messages']) === 2, 'Full PHP severity mask ignored');
 error_log('scalar-php-stderr-probe');
 echo 'runtime-config-ok';

@@ -5,7 +5,7 @@ root_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 work_dir=$(mktemp -d)
 trap 'rm -rf "$work_dir"' EXIT
 mkdir -p "$work_dir/bin" "$work_dir/images"
-cp -R "$root_dir/images/actions-runner" "$root_dir/images/islandora" "$root_dir/images/php83" "$root_dir/images/php84" "$work_dir/images/"
+cp -R "$root_dir/images/actions-runner" "$root_dir/images/islandora" "$root_dir/images/php83" "$root_dir/images/php84" "$root_dir/images/scalar" "$work_dir/images/"
 
 # Model release downloads locally: each URL has distinct, deterministic bytes.
 cat > "$work_dir/bin/curl" <<'CURL'
@@ -29,7 +29,8 @@ verify_sha() {
   grep -Eq "${arg}=\"${expected}\"" "$file"
 }
 
-bash "$root_dir/ci/update-sha.sh" gha-runner 2.334.0 2.335.0 ''
+runner_version=$(sed -n 's/^GitHub Actions runner version \(.*\)\.$/\1/p' images/actions-runner/README.md)
+bash "$root_dir/ci/update-sha.sh" gha-runner "$runner_version" 2.335.0 ''
 verify_sha images/actions-runner/Dockerfile RUNNER_AMD64_SHA256 'https://github.com/actions/runner/releases/download/v2.335.0/actions-runner-linux-x64-2.335.0.tar.gz'
 verify_sha images/actions-runner/Dockerfile RUNNER_ARM64_SHA256 'https://github.com/actions/runner/releases/download/v2.335.0/actions-runner-linux-arm64-2.335.0.tar.gz'
 grep -qx 'GitHub Actions runner version 2.335.0.' images/actions-runner/README.md
@@ -51,6 +52,13 @@ verify_sha images/islandora/Dockerfile CROSSWALK_ARM64_SHA256 'https://github.co
 commit=0123456789abcdef0123456789abcdef01234567
 bash "$root_dir/ci/update-sha.sh" islandora-workbench simple-field-json simple-field-json "$commit"
 verify_sha images/actions-runner/Dockerfile WORKBENCH_SHA256 "https://github.com/lehigh-university-libraries/islandora_workbench/archive/${commit}.tar.gz"
+
+bash "$root_dir/ci/update-sha.sh" scalar master master "$commit"
+verify_sha images/scalar/Dockerfile SHA256 "https://github.com/anvc/scalar/archive/${commit}.tar.gz"
+if bash "$root_dir/ci/update-sha.sh" scalar master master ''; then
+  echo 'Missing Scalar digest unexpectedly succeeded' >&2
+  exit 1
+fi
 
 bash "$root_dir/ci/update-sha.sh" custom-composer 2.10.3 2.11.0 ''
 for image in actions-runner php83 php84; do

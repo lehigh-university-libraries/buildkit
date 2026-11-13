@@ -7,6 +7,8 @@ php -n /ldap-auth.php
 php -n /asset-paths.php
 php /mcrypt.php
 php /rdf-hostname.php
+php /rdfa-optional-fields.php
+php /arc2-xml.php
 test "$(readlink /opt/scalar/system)" = /usr/local/share/scalar/system
 test "$(readlink /opt/scalar/codeigniter.php)" = /usr/local/share/scalar/codeigniter.php
 grep -Fq "define('FCPATH', '/opt/scalar/');" /usr/local/share/scalar/codeigniter.php

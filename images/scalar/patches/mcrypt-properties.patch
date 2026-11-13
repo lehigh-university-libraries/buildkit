@@ -1,9 +1,13 @@
 --- a/system/libraries/phpseclib/Crypt/Common/SymmetricKey.php
 +++ b/system/libraries/phpseclib/Crypt/Common/SymmetricKey.php
-@@ -56,2 +56,6 @@
+@@ -55,6 +55,10 @@
+  */
  abstract class SymmetricKey
  {
 +    // State used by Scalar's bundled mcrypt compatibility layer.
 +    public $mcrypt_mode;
 +    public $mcrypt_polyfill_init;
 +
+     /**#@+
+      * @access public
+      * @see \phpseclib\Crypt\Common\SymmetricKey::encrypt()
