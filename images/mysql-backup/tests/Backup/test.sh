@@ -1,4 +1,5 @@
 #!/command/with-contenv bash
+# shellcheck shell=bash
 set -euo pipefail
 export MYSQL_PWD=$DB_PASSWORD
 sql() { mariadb --skip-ssl -h db -u root "$@"; }

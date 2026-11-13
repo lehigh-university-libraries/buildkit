@@ -1,4 +1,5 @@
 #!/command/with-contenv bash
+# shellcheck shell=bash
 set -euo pipefail
 # with-contenv in the cron job restores s6's environment, including file secrets.
 [[ "$BACKUP_CRON" != *$'\n'* && "$BACKUP_CRON" != *$'\r'* ]] || exit 1
