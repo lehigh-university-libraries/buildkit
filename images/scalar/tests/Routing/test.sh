@@ -41,6 +41,7 @@ for _ in $(seq 1 60); do
   sleep 1
 done
 curl -fsS http://localhost/book/media.txt | grep -q media-ok
+test "$(curl -fsS http://localhost/google204a4e549d4da46a.html)" = 'google-site-verification: google204a4e549d4da46a.html'
 curl -fsS -D /tmp/login-headers http://localhost/login-header-fixture | grep -q 'route:/login-header-fixture:on'
 test "$(grep -c '^Set-Cookie:' /tmp/login-headers)" = 3
 curl -fsS http://localhost/book | grep -q 'route:/book:on'

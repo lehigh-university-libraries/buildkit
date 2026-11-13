@@ -1,3 +1,6 @@
+# Reserved base-image endpoint; application document roots and regex routes do not apply.
+include /etc/nginx/shared/google-site-verification.conf;
+
 # Used to validate that PHP-FPM is in a ready state.
 # Not accessible outside of the container.
 location ~ ^/(status|ping)$ {

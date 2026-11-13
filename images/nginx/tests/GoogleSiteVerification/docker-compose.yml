@@ -1,0 +1,7 @@
+name: nginx-googlesiteverification
+services:
+  nginx:
+    image: ${NGINX:-lehighlts/nginx:local-php83}
+    volumes:
+      - ./test.sh:/test.sh:ro
+    command: [/test.sh]
