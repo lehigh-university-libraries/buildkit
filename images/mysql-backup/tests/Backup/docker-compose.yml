@@ -5,7 +5,9 @@ services:
       MYSQL_ROOT_PASSWORD: test-only
       MYSQL_DATABASE: backup_test
     healthcheck:
-      test: [CMD, mysqladmin, ping, -h, localhost, -ptest-only]
+      # The entrypoint's temporary server only listens on a Unix socket.
+      # Require authenticated TCP access to the initialized fixture database.
+      test: [CMD, mysql, --protocol=TCP, -h, 127.0.0.1, -u, root, -ptest-only, backup_test, -e, "SELECT 1"]
       interval: 2s
       timeout: 5s
       retries: 60
