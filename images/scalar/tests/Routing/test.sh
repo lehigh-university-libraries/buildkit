@@ -27,6 +27,11 @@ cat > /opt/scalar/codeigniter.php <<'PHP'
 define('BASEPATH', '/usr/local/share/scalar/system/');
 require BASEPATH . 'application/config/database.php';
 require BASEPATH . 'application/config/local_settings.php';
+if (($_SERVER['PATH_INFO'] ?? '') === '/login-header-fixture') {
+    for ($i = 0; $i < 3; $i++) {
+        header('Set-Cookie: fixture'.$i.'='.str_repeat('x', 3000).'; Path=/; Secure; HttpOnly', false);
+    }
+}
 echo 'route:' . ($_SERVER['PATH_INFO'] ?? '') . ':' . ($_SERVER['HTTPS'] ?? 'off') . ':query:' . ($_SERVER['QUERY_STRING'] ?? '') . ':db:' . $db['default']['hostname'] . ':ldap:' . $config['ldap_email_domain'] . ':' . $config['ldap_object_class'];
 PHP
 for _ in $(seq 1 60); do
@@ -34,6 +39,8 @@ for _ in $(seq 1 60); do
   sleep 1
 done
 curl -fsS http://localhost/book/media.txt | grep -q media-ok
+curl -fsS -D /tmp/login-headers http://localhost/login-header-fixture | grep -q 'route:/login-header-fixture:on'
+test "$(grep -c '^Set-Cookie:' /tmp/login-headers)" = 3
 curl -fsS http://localhost/book | grep -q 'route:/book:on'
 curl -fsS 'http://localhost/book/story?a=1&b=2' | grep -q 'route:/book/story:on:query:a=1\&b=2:db:staging-db.invalid:ldap:example.edu:person'
 curl -fsS http://localhost/maintenance.html >/dev/null

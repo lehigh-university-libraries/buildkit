@@ -1,0 +1,10 @@
+--- a/system/application/models/user_model.php
++++ b/system/application/models/user_model.php
+@@ -807,1 +807,1 @@
+-    	$arr = json_decode($json, true);
++    	$arr = json_decode((string) $json, true);
+--- a/system/core/Exceptions.php
++++ b/system/core/Exceptions.php
+@@ -61,1 +61,1 @@
+-						E_STRICT			=>	'Runtime Notice'
++						2048 /* E_STRICT */ => 'Runtime Notice'
