@@ -1,0 +1,7 @@
+#!/command/with-contenv bash
+set -euo pipefail
+# with-contenv in the cron job restores s6's environment, including file secrets.
+[[ "$BACKUP_CRON" != *$'\n'* && "$BACKUP_CRON" != *$'\r'* ]] || exit 1
+mkdir -p /etc/mysql-backup-crontabs
+printf '%s /command/with-contenv /usr/local/bin/mysql-backup.sh\n' "$BACKUP_CRON" > /etc/mysql-backup-crontabs/root
+exec env TZ=UTC busybox crond -f -l 8 -L /dev/stderr -c /etc/mysql-backup-crontabs

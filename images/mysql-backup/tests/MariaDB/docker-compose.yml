@@ -1,0 +1,25 @@
+services:
+  db:
+    image: mariadb:11.8.9@sha256:f16d7a344413e519dff518f27bdb221388f84b0d274c97c4fb5f2cb0dc1b34fa
+    environment:
+      MARIADB_ROOT_PASSWORD: test-only
+      MARIADB_DATABASE: backup_test
+    healthcheck:
+      test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+      interval: 2s
+      timeout: 5s
+      retries: 60
+  mysql-backup:
+    image: ${MYSQL_BACKUP:-lehighlts/mysql-backup:local}
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: test-only
+      DB_NAME: backup_test
+      BACKUP_DIR: /tmp/backups
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ../Backup/test.sh:/test.sh:ro
+    command: [/command/with-contenv, bash, /test.sh]

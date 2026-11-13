@@ -60,6 +60,7 @@ IMAGES = [
   "java25",
   "leptonica",
   "mariadb11",
+  "mysql-backup",
   "mergepdf",
   "nginx-php83",
   "nginx-php84",
@@ -82,6 +83,7 @@ IMAGES = [
 ]
 
 PUBLISHED_IMAGES = {
+  "mysql-backup" = "mysql-backup"
   "scyllaridae-whisper" = "scyllaridae-whisper"
   "scyllaridae-tn-zip" = "scyllaridae-tn-zip"
   "scyllaridae-tn-warc" = "scyllaridae-tn-warc"
@@ -136,6 +138,7 @@ PUBLISHED_IMAGES = {
 }
 
 LOCAL_TAG_SUFFIXES = {
+  "mysql-backup" = ""
   "scyllaridae-whisper" = ""
   "scyllaridae-tn-zip" = ""
   "scyllaridae-tn-warc" = ""
@@ -190,6 +193,7 @@ LOCAL_TAG_SUFFIXES = {
 }
 
 DEPENDENCIES = {
+  "mysql-backup" = ["base"]
   "scyllaridae-whisper" = ["scyllaridae"]
   "scyllaridae-tn-zip" = ["scyllaridae"]
   "scyllaridae-tn-warc" = ["scyllaridae"]
@@ -697,4 +701,9 @@ target "scyllaridae-whisper-common" {
 target "scyllaridae-scribe-book-common" {
   inherits = ["common"]
   context = context("scyllaridae-scribe-book")
+}
+
+target "mysql-backup-common" {
+  inherits = ["common"]
+  context = context("mysql-backup")
 }

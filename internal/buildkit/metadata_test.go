@@ -1476,3 +1476,21 @@ esac
 		t.Fatal("registry errors must fail rather than silently fall back")
 	}
 }
+
+func TestMySQLBackupMetadata(t *testing.T) {
+	metadata, err := LoadMetadata(repoRoot(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !metadata.KnownImage("mysql-backup") {
+		t.Fatal("missing backup image")
+	}
+	tags, err := metadata.Tags("mysql-backup", "version", "main")
+	if err != nil || len(tags) != 1 || tags[0] != "main" {
+		t.Fatalf("backup runtime tags = %v, error %v", tags, err)
+	}
+	deps, err := metadata.DependenciesOf("mysql-backup")
+	if err != nil || len(deps) != 1 || deps[0] != "base" {
+		t.Fatalf("backup dependencies = %v, error %v", deps, err)
+	}
+}

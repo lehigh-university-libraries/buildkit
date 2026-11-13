@@ -1,0 +1,25 @@
+services:
+  db:
+    image: mysql:8.4.10@sha256:d36d39a64cd12a5c1cc9e6aa2bfb5f8d4c81a2f6586e0a04a9ae13939db02209
+    environment:
+      MYSQL_ROOT_PASSWORD: test-only
+      MYSQL_DATABASE: backup_test
+    healthcheck:
+      test: [CMD, mysqladmin, ping, -h, localhost, -ptest-only]
+      interval: 2s
+      timeout: 5s
+      retries: 60
+  mysql-backup:
+    image: ${MYSQL_BACKUP:-lehighlts/mysql-backup:local}
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: test-only
+      DB_NAME: backup_test
+      BACKUP_DIR: /tmp/backups
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./test.sh:/test.sh:ro
+    command: [/command/with-contenv, bash, /test.sh]
