@@ -50,11 +50,11 @@ check($config['php_error_reporting'] === 4437 && error_reporting() === 4437, 'PH
 function config_item($name) { global $config; return $config[$name] ?? null; }
 // Capture CodeIgniter's logging calls independently of the native PHP mask.
 function log_message($level, $message, $php_error = false) { $GLOBALS['php_messages'][] = $message; }
-require BASEPATH . 'core/Exceptions.php';
-require APPPATH . 'libraries/MY_Exceptions.php';
-$exceptions = new MY_Exceptions();
+require_once BASEPATH . 'core/Common.php';
+$exceptions =& load_class('Exceptions', 'core');
+check($exceptions instanceof MY_Exceptions, 'Core exception extension was not discovered');
 $GLOBALS['php_messages'] = array();
-$exceptions->log_exception(E_WARNING, 'must-not-log-warning', __FILE__, __LINE__);
+_exception_handler(E_WARNING, 'must-not-log-warning', __FILE__, __LINE__);
 $exceptions->log_exception(E_DEPRECATED, 'must-not-log-deprecation', __FILE__, __LINE__);
 $exceptions->log_exception(E_USER_ERROR, 'keep-fatal-error', __FILE__, __LINE__);
 check(count($GLOBALS['php_messages']) === 1 && strpos($GLOBALS['php_messages'][0], 'keep-fatal-error') !== false, 'PHP severity filter failed');

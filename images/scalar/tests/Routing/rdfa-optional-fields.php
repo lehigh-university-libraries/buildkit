@@ -2,12 +2,13 @@
 error_reporting(E_ALL);
 set_error_handler(function ($severity, $message) { throw new RuntimeException($message); });
 $template = file('/usr/local/share/scalar/system/application/views/arbors/html5_RDFa/wrapper.php');
-$sort = $name = null;
+$sort = $name = $skip_current = null;
 foreach ($template as $line) {
+    if (strpos($line, 'if ($book->versions[$j]->content_id ==') !== false) $skip_current = trim($line);
     if (strpos($line, '->sort_number =') !== false && strpos($line, '$outward_item->page_index') !== false) $sort = trim($line);
     if (strpos($line, 'scalar:fullname') !== false && strpos($line, '$outward_item') !== false) $name = $line;
 }
-if ($sort === null || $name === null) throw new RuntimeException('RDFa template sections missing');
+if ($sort === null || $name === null || $skip_current === null) throw new RuntimeException('RDFa template sections missing');
 foreach (array(false, true) as $populated) {
     $version = new stdClass;
     $outward_item = (object) array('version_index' => 0, 'versions' => array($version));
@@ -22,6 +23,14 @@ foreach (array(false, true) as $populated) {
     if ($version->sort_number !== ($populated ? 4 : 0)
         || strpos($output, '>'.($populated ? 'Fixture Author' : '').'</span>') === false) {
         throw new RuntimeException('RDFa optional field rendering changed');
+    }
+}
+$book = (object) array('versions' => array((object) array('content_id' => 7)));
+foreach (array(null, new stdClass, (object) array('content_id' => 7), (object) array('content_id' => 8)) as $page) {
+    $included = false;
+    eval('foreach (array(0) as $j) { ' . $skip_current . ' $included = true; }');
+    if ($included !== (($page->content_id ?? null) != 7)) {
+        throw new RuntimeException('RDFa current-page exclusion changed');
     }
 }
 echo "PASS: RDFa optional fields render without warnings\n";

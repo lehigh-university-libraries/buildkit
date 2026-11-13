@@ -1,5 +1,14 @@
 --- a/system/application/views/arbors/html5_RDFa/wrapper.php
 +++ b/system/application/views/arbors/html5_RDFa/wrapper.php
+@@ -226,7 +226,7 @@
+ 		</span>
+ <?  for ($j = 0; $j < count($book->versions); $j++):
+ 			if (empty($book->versions[$j]->content_id)) continue;
+-			if ($book->versions[$j]->content_id == @$page->content_id) continue;
++			if ($book->versions[$j]->content_id == ($page->content_id ?? null)) continue;
+ ?>
+ 		<span inert resource="<?=$base_uri.$book->versions[$j]->slug?>" typeof="scalar:<?=('media'==$book->versions[$j]->type)?'Media':'Composite'?>">
+ 			<a class="metadata" tabindex="-1" rel="dcterms:hasVersion" href="<?=$base_uri.$book->versions[$j]->slug.'.'.$book->versions[$j]->versions[0]->version_num?>"></a>
 @@ -419,7 +419,7 @@
  <?
  		foreach ($outward_array as $outward_item):
