@@ -1,5 +1,5 @@
 FROM scyllaridae AS service
-FROM pandoc/latex:3.10-ubuntu@sha256:568ae5d3dc4cf9266753c9c78e7d073c1472f6540e0cf02de6a330143df8bdb7 AS pandoc
+FROM pandoc/latex:3.11-ubuntu@sha256:24cd38c7f0e9f7020cb3faaa5122eca719f5e72039f45d15b699bb3168055d44 AS pandoc
 
 ARG \
   # renovate: datasource=repology depName=ubuntu_24_04/curl

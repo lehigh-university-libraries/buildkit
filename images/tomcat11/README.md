@@ -1,6 +1,6 @@
 # Tomcat 11
 
-Docker image for [Tomcat] version 11.0.27.
+Docker image for [Tomcat] version 11.0.29.
 
 Built from [lehigh-university-libraries/buildkit tomcat11](https://github.com/lehigh-university-libraries/buildkit/tree/main/images/tomcat11)
 
