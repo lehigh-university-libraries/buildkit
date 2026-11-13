@@ -14,4 +14,5 @@ services:
       - ./rdf-hostname.php:/rdf-hostname.php:ro
       - ./rdfa-optional-fields.php:/rdfa-optional-fields.php:ro
       - ./arc2-xml.php:/arc2-xml.php:ro
+      - ./dashboard-book-id.php:/dashboard-book-id.php:ro
     command: [/test.sh]

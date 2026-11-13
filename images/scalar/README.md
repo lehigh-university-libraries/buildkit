@@ -180,6 +180,7 @@ Each patch in `patches/` is rebased directly against the pinned upstream source:
 | `asset-paths.patch` | Generate public asset URLs when application code and writable book data have separate filesystem roots. |
 | `mcrypt-properties.patch` | Declare compatibility-layer state instead of creating deprecated dynamic properties. |
 | `rdf-hostname.patch` | Preserve a database hostname when the port is supplied separately. |
+| `dashboard-book-id.patch` | Normalize invalid dashboard IDs, bind image-query IDs, and prevent invalid IDs in tab links. |
 | `php-deprecations.patch` | Preserve the legacy strict-error category without referencing the deprecated PHP constant. Master's null-JSON fix is used directly. |
 | `rdfa-optional-fields.patch` | Render optional RDFa fields without undefined-property warnings. |
 | `arc2-xml-callables.patch` | Register direct XML method callbacks in all four ARC2 XML parsers for PHP 8.4. |

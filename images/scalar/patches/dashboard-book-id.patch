@@ -1,0 +1,67 @@
+--- a/system/application/controllers/system.php
++++ b/system/application/controllers/system.php
+@@ -484,7 +484,7 @@
+ 
+ 		$this->load->model('book_model', 'books');
+ 
+-		$book_id = (isset($_REQUEST['book_id']) && !empty($_REQUEST['book_id'])) ? $_REQUEST['book_id'] : 0;
++		$book_id = filter_var($_REQUEST['book_id'] ?? 0, FILTER_VALIDATE_INT, array('options' => array('min_range' => 1))) ?: 0;
+ 		$user_id = (isset($_REQUEST['user_id']) && !empty($_REQUEST['user_id'])) ? $_REQUEST['user_id'] : 0;
+ 		$action = (isset($_REQUEST['action']) && !empty($_REQUEST['action'])) ? $_REQUEST['action'] : null;
+ 
+@@ -509,7 +509,7 @@
+ 		$this->data['zone']    		= (isset($_REQUEST['zone']) && !empty($_REQUEST['zone'])) ? $_REQUEST['zone'] : 'user';
+ 		$this->data['type']    		= (isset($_GET['type']) && !empty($_GET['type'])) ? $_GET['type'] : null;
+ 		$this->data['sq']      		= (isset($_GET['sq']) && !empty($_GET['sq'])) ? trim($_GET['sq']) : null;
+-		$this->data['book_id'] 		= (isset($_GET['book_id']) && !empty($_GET['book_id'])) ? trim($_GET['book_id']) : 0;
++		$this->data['book_id'] 		= $book_id;
+ 		$this->data['delete']  		= (isset($_GET['delete']) && !empty($_GET['delete'])) ? trim($_GET['delete']) : null;
+ 		$this->data['saved']   		= (isset($_GET['action'])&&'saved'==$_GET['action']) ? true : false;
+ 		$this->data['deleted'] 		= (isset($_GET['action'])&&'deleted'==$_GET['action']) ? true : false;
+--- a/system/application/models/book_model.php
++++ b/system/application/models/book_model.php
+@@ -298,6 +298,9 @@
+ 
+     public function get_images($book_id, $additional_suffixes=array()) {
+ 
++        $book_id = filter_var($book_id, FILTER_VALIDATE_INT, array('options' => array('min_range' => 1)));
++        if ($book_id === false) return array();
++
+     	$add_str = '';
+     	if (!empty($additional_suffixes)) {
+     		foreach ($additional_suffixes as $suffix) {
+@@ -307,12 +310,12 @@
+     	$q = "SELECT A.content_id, A.slug, B.version_id, B.url, B.title, B.version_num ".
+     		 "FROM scalar_db_content A, scalar_db_versions B " .
+     		 "WHERE B.content_id = A.content_id " .
+-    		 "AND A.book_id = $book_id " .
++    		 "AND A.book_id = ? " .
+     		 "AND A.type='media' " .
+     	     "AND A.is_live = 1 " .
+     		 "AND (B.url LIKE '%.gif%' OR B.url LIKE '%.jpg%' OR B.url LIKE '%.jpeg%' OR B.url LIKE '%.png%' OR B.url LIKE '%JPEG%' OR B.url LIKE '%webp%' ".$add_str.") " .
+     		 "ORDER BY B.title ASC, B.version_num ASC";
+-    	$query = $this->db->query($q);
++    	$query = $this->db->query($q, array($book_id));
+     	$result = $query->result();
+ 		$return = array();
+ 		foreach ($result as $row) {
+--- a/system/application/views/modules/dashboard/tabs.js
++++ b/system/application/views/modules/dashboard/tabs.js
+@@ -21,7 +21,7 @@
+ 		if (book_id && book_id.indexOf('#')!=-1) book_id = book_id.substr(0, book_id.indexOf('#'));
+ 
+ 		str = '?';
+-		if ('undefined' != typeof(book_id)) str += 'book_id='+book_id+'&';
++		if (/^[1-9][0-9]*$/.test(String(book_id))) str += 'book_id='+book_id+'&';
+ 		str += 'zone='+zone+'#'+hash;
+ 		document.location.href = str;
+ 
+@@ -54,7 +54,7 @@
+ 		if (book_id && book_id.indexOf('#')!=-1) book_id = book_id.substr(0, book_id.indexOf('#'));
+ 
+ 		str = '?';
+-		if ('undefined' != typeof(book_id)) str += 'book_id='+book_id+'&';
++		if (/^[1-9][0-9]*$/.test(String(book_id))) str += 'book_id='+book_id+'&';
+ 		str += 'zone='+zone+'#'+hash;
+ 		document.location.href = str;
+ 

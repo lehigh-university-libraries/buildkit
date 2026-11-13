@@ -15,7 +15,9 @@ RUN --mount=type=cache,id=scalar-downloads-${TARGETARCH},sharing=locked,target=/
     test "$(tail -n 1 system/application/views/scalar-version.php)" = "${SOFTWARE_VERSION}" && \
     dos2unix system/application/models/user_model.php system/application/config/local_settings.php \
       system/application/helpers/MY_html_helper.php system/application/libraries/RDF_Store.php \
-      system/application/views/arbors/html5_RDFa/wrapper.php system/core/Common.php system/core/Exceptions.php && \
+      system/application/views/arbors/html5_RDFa/wrapper.php system/core/Common.php system/core/Exceptions.php \
+      system/application/controllers/system.php system/application/models/book_model.php \
+      system/application/views/modules/dashboard/tabs.js && \
     for patch_file in /tmp/scalar-patches/*.patch; do patch --batch --forward --fuzz=0 -p1 < "$patch_file" || exit 1; done && \
     rm -rf /tmp/scalar-patches && \
     grep -F "define('FCPATH', str_replace(SELF, '', __FILE__));" codeigniter.php && \
