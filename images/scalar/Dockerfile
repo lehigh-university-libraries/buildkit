@@ -5,9 +5,9 @@ ARG TARGETARCH
 # Upstream master snapshot; SOFTWARE_VERSION must match scalar-version.php.
 ARG SOFTWARE_VERSION=2.6.12
 # renovate: datasource=git-refs depName=scalar packageName=https://github.com/anvc/scalar.git branch=master
-ARG COMMIT=daf68e2cca8e89d5c39d52ac606dd129e880bf0d
+ARG COMMIT=5177f6aeaa9d40ebdb5910dc489243ae7473a082
 ARG URL=https://github.com/anvc/scalar/archive/${COMMIT}.tar.gz
-ARG SHA256="057ba09b2c7e84865c53b70852d830a7b067434b0f4453ed83f7bd23d6a23ef7"
+ARG SHA256="47b2737af3df410d20eb503ebe0f0d2952eaf73429e04f9ac36712b796bdfca6"
 WORKDIR /usr/local/share/scalar
 COPY patches /tmp/scalar-patches
 RUN --mount=type=cache,id=scalar-downloads-${TARGETARCH},sharing=locked,target=/opt/downloads \
