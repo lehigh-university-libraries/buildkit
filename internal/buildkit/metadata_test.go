@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -36,12 +37,35 @@ func TestMetadataTagsMatchForkedVersioning(t *testing.T) {
 		{image: "drupal-php84", mode: "version", fallback: "branch/name", want: []string{nginxTag + "-php84"}},
 		{image: "islandora-php84", mode: "version", fallback: "branch/name", want: []string{nginxTag + "-php84"}},
 		{image: "wp-php84", mode: "version", fallback: "branch/name", want: []string{nginxTag + "-php84"}},
-		{image: "ojs-php83", mode: "version", fallback: "branch/name", want: []string{"3.5.0-5-php83", "3.5-php83", "3-php83", "php83"}},
-		{image: "ojs-php84", mode: "version", fallback: "branch/name", want: []string{"3.5.0-5-php84", "3.5-php84", "3-php84", "php84", "latest-php84", "latest"}},
-		{image: "omeka-s-php83", mode: "version", fallback: "branch/name", want: []string{"4.2.1-php83", "4.2-php83", "4-php83", "php83"}},
-		{image: "omeka-s-php84", mode: "version", fallback: "branch/name", want: []string{"4.2.1-php84", "4.2-php84", "4-php84", "php84", "latest-php84", "latest"}},
-		{image: "omeka-classic-php83", mode: "version", fallback: "branch/name", want: []string{"3.2.1-php83", "3.2-php83", "3-php83", "php83"}},
-		{image: "omeka-classic-php84", mode: "version", fallback: "branch/name", want: []string{"3.2.1-php84", "3.2-php84", "3-php84", "php84", "latest-php84", "latest"}},
+	}
+
+	// Release automation changes Dockerfile versions; expectations follow those
+	// inputs while still checking the full tag expansion and latest policy.
+	for _, app := range []string{"ojs", "omeka-s", "omeka-classic"} {
+		version, err := dockerfileArgDefault(filepath.Join(root, "images", app, "Dockerfile"), "SOFTWARE_VERSION")
+		if err != nil {
+			t.Fatal(err)
+		}
+		parts := strings.Split(version, ".")
+		if len(parts) < 2 || len(parts) > 3 {
+			t.Fatalf("unexpected %s version %q", app, version)
+		}
+		for _, php := range []string{"php83", "php84"} {
+			want := []string{version + "-" + php}
+			if len(parts) == 3 {
+				want = append(want, parts[0]+"."+parts[1]+"-"+php)
+			}
+			want = append(want, parts[0]+"-"+php, php)
+			if php == "php84" {
+				want = append(want, "latest-php84", "latest")
+			}
+			cases = append(cases, struct {
+				image, mode, fallback string
+				want                  []string
+			}{
+				image: app + "-" + php, mode: "version", fallback: "branch/name", want: want,
+			})
+		}
 	}
 
 	for _, tt := range cases {
@@ -60,17 +84,42 @@ func TestMetadataTagsMatchForkedVersioning(t *testing.T) {
 	}
 }
 
+func TestOmekaTwoPartReleaseTags(t *testing.T) {
+	metadata, err := LoadMetadata(repoRoot(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	metadata.Root = t.TempDir()
+	for _, app := range []string{"omeka-s", "omeka-classic"} {
+		dir := filepath.Join(metadata.Root, "images", app)
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(dir, "Dockerfile"), []byte("ARG SOFTWARE_VERSION=3.3\n"), 0644); err != nil {
+			t.Fatal(err)
+		}
+		for _, php := range []string{"php83", "php84"} {
+			want := "3.3-" + php + " 3-" + php + " " + php
+			if php == "php84" {
+				want += " latest-php84 latest"
+			}
+			got, err := metadata.Tags(app+"-"+php, "version", "main")
+			if err != nil || strings.Join(got, " ") != want {
+				t.Fatalf("%s two-part tags = %v, %v; want %s", app+"-"+php, got, err, want)
+			}
+		}
+	}
+}
+
 func TestBundledPHPAppsDownloadVerifiedReleases(t *testing.T) {
 	root := repoRoot(t)
 	cases := []struct {
-		image    string
-		version  string
-		checksum string
-		dest     string
+		image string
+		dest  string
 	}{
-		{image: "ojs", version: "3.5.0-5", checksum: "fd59cb1add60ab4e56e40ed843ea43ff84af11f0b64c3940f2e03186ad11445e", dest: "/var/www/ojs"},
-		{image: "omeka-s", version: "4.2.1", checksum: "cc27d1c7aca0209523d19aa285f4a08e29e34950dcc446951a7c1311de348e82", dest: "/var/www/omeka-s"},
-		{image: "omeka-classic", version: "3.2.1", checksum: "2cb4d65511321cc5c009cb61516d9ed97378a800fc4a26eb46450c3c4ca230c2", dest: "/var/www/omeka-classic"},
+		{image: "ojs", dest: "/var/www/ojs"},
+		{image: "omeka-s", dest: "/var/www/omeka-s"},
+		{image: "omeka-classic", dest: "/var/www/omeka-classic"},
 	}
 
 	for _, tt := range cases {
@@ -80,9 +129,27 @@ func TestBundledPHPAppsDownloadVerifiedReleases(t *testing.T) {
 			t.Fatal(err)
 		}
 		got := string(content)
+		version, err := dockerfileArgDefault(dockerfile, "SOFTWARE_VERSION")
+		if err != nil {
+			t.Fatal(err)
+		}
+		pattern := `^[0-9]+\.[0-9]+(?:\.[0-9]+)?$`
+		if tt.image == "ojs" {
+			pattern = `^[0-9]+\.[0-9]+\.[0-9]+-[0-9]+$`
+		}
+		if !regexp.MustCompile(pattern).MatchString(version) {
+			t.Errorf("%s has invalid release version %q", dockerfile, version)
+		}
+		if !regexp.MustCompile(`(?m)^ARG SHA256="[a-f0-9]{64}"$`).MatchString(got) {
+			t.Errorf("%s must pin an archive SHA-256", dockerfile)
+		}
+		if !regexp.MustCompile(`(?m)^ARG (?:URL|FILE)=.*\$\{SOFTWARE_VERSION\}`).MatchString(got) {
+			t.Errorf("%s download must use SOFTWARE_VERSION", dockerfile)
+		}
+		if !regexp.MustCompile(`(?m)^ARG URL=https://[^\r\n]*\$\{FILE\}$`).MatchString(got) {
+			t.Errorf("%s URL must use the versioned FILE", dockerfile)
+		}
 		for _, want := range []string{
-			"SOFTWARE_VERSION=" + tt.version,
-			"SHA256=\"" + tt.checksum + "\"",
 			"download.sh",
 			"--sha256 \"${SHA256}\"",
 			"--strip",

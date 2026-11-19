@@ -101,6 +101,7 @@
     {
       matchDepNames: [
         'omeka-classic',
+        'omeka-s',
       ],
       allowedVersions: '/^\\d+\\.\\d+(?:\\.\\d+)?$/',
     },

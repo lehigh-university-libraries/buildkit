@@ -1,6 +1,6 @@
 # MariaDB 11
 
-Docker image for [MariaDB] version 11.8.8.
+Docker image for [MariaDB] version 11.8.9.
 
 Built from [lehigh-university-libraries/buildkit mariadb11](https://github.com/lehigh-university-libraries/buildkit/tree/main/images/mariadb11)
 

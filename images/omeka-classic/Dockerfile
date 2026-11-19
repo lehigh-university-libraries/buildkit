@@ -16,11 +16,11 @@ ARG \
     # renovate: datasource=repology depName=alpine_3_24/unzip
     UNZIP_VERSION=6.0-r16 \
     # renovate: datasource=github-releases depName=omeka-classic packageName=omeka/Omeka
-    SOFTWARE_VERSION=3.2.1
+    SOFTWARE_VERSION=3.2.2
 
 ARG FILE=omeka-${SOFTWARE_VERSION}.zip
 ARG URL=https://github.com/omeka/Omeka/releases/download/v${SOFTWARE_VERSION}/${FILE}
-ARG SHA256="2cb4d65511321cc5c009cb61516d9ed97378a800fc4a26eb46450c3c4ca230c2"
+ARG SHA256="9e273649b99fb81ec3b9855d3e168f1b39881760789f409beb9d34f533c3d9c3"
 
 EXPOSE 80
 WORKDIR /var/www/omeka-classic
