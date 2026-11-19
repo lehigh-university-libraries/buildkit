@@ -83,3 +83,16 @@ assert.equal(scalarPin?.groups.depName, 'scalar');
 assert.equal(scalarPin.groups.currentValue, 'master');
 assert.match(scalarPin.groups.currentDigest, /^[a-f0-9]{40}$/);
 assert(config.packageRules.some(r => r.matchDepNames?.includes('scalar') && r.allowedVersions === null));
+
+for (const flavor of ['php83', 'php84']) {
+  const minor = `8.${flavor.at(-1)}`;
+  const source = config.customManagers.find(m => m.depNameTemplate === `${flavor}-source`);
+  const aport = fs.readFileSync(path.join(root, `images/${flavor}/build/APKBUILD`), 'utf8');
+  const version = new RegExp(source.matchStrings[0]).exec(aport)?.groups.currentValue;
+  assert(version?.startsWith(`${minor}.`));
+  const dockerfile = fs.readFileSync(path.join(root, `images/${flavor}/Dockerfile`), 'utf8');
+  assert(dockerfile.includes(`SOFTWARE_VERSION=${version}-r0`));
+  assert.equal(new RegExp(source.extractVersionTemplate).exec(`php-${version}`)?.groups.version, version);
+  const rule = config.packageRules.find(r => r.matchDepNames?.includes(`${flavor}-source`));
+  assert.deepEqual(Array.from(rule.postUpgradeTasks.commands), [`bash ci/update-php.sh ${flavor}`]);
+}

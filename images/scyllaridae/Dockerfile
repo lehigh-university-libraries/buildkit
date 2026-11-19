@@ -3,9 +3,9 @@ FROM go1-26 AS builder
 WORKDIR /build
 
 # renovate: datasource=github-releases depName=scyllaridae packageName=islandora/scyllaridae
-ARG SOFTWARE_VERSION=5.3.9
+ARG SOFTWARE_VERSION=5.3.10
 ARG SCYLLARIDAE_URL="https://github.com/islandora/scyllaridae/archive/refs/tags/${SOFTWARE_VERSION}.tar.gz"
-ARG SCYLLARIDAE_SHA256="e31d1066c069783c8387cf18353677260123fd31603addb926092f62602fe60c"
+ARG SCYLLARIDAE_SHA256="0590214eb21f36e43ba8ae52470192c5beba14035c3322de27a9de77887e8550"
 RUN download.sh \
       --url "${SCYLLARIDAE_URL}" \
       --sha256 "${SCYLLARIDAE_SHA256}" \

@@ -42,6 +42,16 @@ Requires `lehighlts/base` Docker image to build. Please refer to the
 
 ## Updating
 
+PHP is compiled from the vendored Alpine aport in `build/`, using the same
+signed APK build as isle-buildkit. The builder verifies source and patch
+checksums; only runtime packages enter the final image. The original aport
+commit is recorded in `build/APKBUILD`.
+
+Run `bash ci/update-php.sh php83 <version>` to verify a PHP release
+against php.net's SHA256, refresh the source SHA512, and update the runtime pin.
+Renovate runs this updater for new releases in this PHP minor series.
+
+
 You can change the release used for `composer` by modifying the build argument
 `COMPOSER_VERSION` and `COMPOSER_SHA256` in the `Dockerfile` shown as `XXXXXXXXXXXX` in the
 following snippet:

@@ -6,6 +6,9 @@ on:
       - "renovate.json5"
       - "images/**/Dockerfile"
       - "ci/tests/renovate-config.cjs"
+      - "ci/update-php.sh"
+      - "ci/tests/update-php.sh"
+      - "images/php*/build/**"
       - ".github/workflows/validate-renovate.yml"
 
 env:
@@ -21,6 +24,9 @@ jobs:
 
       - name: Check dependency extraction
         run: node ci/tests/renovate-config.cjs
+
+      - name: Check PHP source updater
+        run: bash ci/tests/update-php.sh
 
       - run: |
           set -eou pipefail

@@ -20,6 +20,42 @@
   ],
   packageRules: [
     {
+      "matchDepNames": [
+        "php84-source"
+      ],
+      "allowedVersions": "/^8\\.4\\.[0-9]+$/",
+      "groupName": null,
+      "minimumReleaseAge": null,
+      "schedule": [],
+      "postUpgradeTasks": {
+        "commands": [
+          "bash ci/update-php.sh php84"
+        ],
+        "fileFilters": [
+          "images/php84/build/APKBUILD",
+          "images/php84/Dockerfile"
+        ]
+      }
+    },
+    {
+      "matchDepNames": [
+        "php83-source"
+      ],
+      "allowedVersions": "/^8\\.3\\.[0-9]+$/",
+      "groupName": null,
+      "minimumReleaseAge": null,
+      "schedule": [],
+      "postUpgradeTasks": {
+        "commands": [
+          "bash ci/update-php.sh php83"
+        ],
+        "fileFilters": [
+          "images/php83/build/APKBUILD",
+          "images/php83/Dockerfile"
+        ]
+      }
+    },
+    {
       matchManagers: [
         'dockerfile',
       ],
@@ -101,6 +137,7 @@
     {
       matchDepNames: [
         'omeka-classic',
+        'omeka-s',
       ],
       allowedVersions: '/^\\d+\\.\\d+(?:\\.\\d+)?$/',
     },
@@ -210,6 +247,36 @@
     },
   ],
   customManagers: [
+    {
+      "customType": "regex",
+      "description": "Update vendored PHP source",
+      "managerFilePatterns": [
+        "/^images/php84/build/APKBUILD$/"
+      ],
+      "matchStrings": [
+        "pkgver=(?<currentValue>8\\.4\\.[0-9]+)"
+      ],
+      "datasourceTemplate": "github-tags",
+      "packageNameTemplate": "php/php-src",
+      "depNameTemplate": "php84-source",
+      "extractVersionTemplate": "^php-(?<version>8\\.4\\.[0-9]+)$",
+      "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "description": "Update vendored PHP source",
+      "managerFilePatterns": [
+        "/^images/php83/build/APKBUILD$/"
+      ],
+      "matchStrings": [
+        "pkgver=(?<currentValue>8\\.3\\.[0-9]+)"
+      ],
+      "datasourceTemplate": "github-tags",
+      "packageNameTemplate": "php/php-src",
+      "depNameTemplate": "php83-source",
+      "extractVersionTemplate": "^php-(?<version>8\\.3\\.[0-9]+)$",
+      "versioningTemplate": "semver"
+    },
     {
       customType: 'regex',
       description: 'Update the digest-pinned BuildKit daemon image',
