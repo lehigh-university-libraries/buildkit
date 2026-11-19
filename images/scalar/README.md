@@ -156,8 +156,8 @@ The image does not enable arbitrary PHP config overrides from book storage.
 ## Upstream baseline
 
 The image bundles upstream master commit
-[`daf68e2cca8e89d5c39d52ac606dd129e880bf0d`](https://github.com/anvc/scalar/commit/daf68e2cca8e89d5c39d52ac606dd129e880bf0d),
-verified on 2026-11-13. Upstream identifies this snapshot as **2.6.12**; it is
+[`5177f6aeaa9d40ebdb5910dc489243ae7473a082`](https://github.com/anvc/scalar/commit/5177f6aeaa9d40ebdb5910dc489243ae7473a082),
+verified on 2026-11-19. Upstream identifies this snapshot as **2.6.12**; it is
 not a tagged 2.6.12 release. The source archive has a pinned SHA256 checksum.
 `/usr/share/scalar-version` and `/usr/share/scalar-revision` record both values.
 The build rejects a source version that differs from `SOFTWARE_VERSION`.

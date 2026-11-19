@@ -88,7 +88,9 @@
       "index_msg",
       "index_render_published",
       "ldap_basedn",
+      "ldap_email_domain",
       "ldap_filter",
+      "ldap_object_class",
       "ldap_port",
       "ldap_server",
       "ldap_uname_field",
@@ -123,5 +125,5 @@
       "youtube_data_key"
     ]
   },
-  "revision": "daf68e2cca8e89d5c39d52ac606dd129e880bf0d"
+  "revision": "5177f6aeaa9d40ebdb5910dc489243ae7473a082"
 }
