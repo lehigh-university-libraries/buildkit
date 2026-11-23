@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.20.0
+# syntax=docker/dockerfile:1.20.0@sha256:26147acbda4f14c5add9946e2fd2ed543fc402884fd75146bd342a7f6271dc1d
 ARG SOFTWARE_VERSION=8.4.28-r6-alpine3.24
 FROM ghcr.io/libops/php:${SOFTWARE_VERSION}@sha256:9018341576b59c8938fd26c268ff3eb1e0d00ec0a24ba08365584c7330b90ebd AS php_packages
 FROM base
