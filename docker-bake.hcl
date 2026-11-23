@@ -49,7 +49,6 @@ IMAGES = [
   "crayfits",
   "drupal-php83",
   "drupal-php84",
-  "go1-26",
   "homarus",
   "houdini",
   "hypercube",
@@ -105,7 +104,6 @@ PUBLISHED_IMAGES = {
   "crayfits" = "crayfits"
   "drupal-php83" = "drupal"
   "drupal-php84" = "drupal"
-  "go1-26" = "go"
   "homarus" = "homarus"
   "houdini" = "houdini"
   "hypercube" = "hypercube"
@@ -160,7 +158,6 @@ LOCAL_TAG_SUFFIXES = {
   "crayfits" = ""
   "drupal-php83" = "php83"
   "drupal-php84" = "php84"
-  "go1-26" = "1.26"
   "homarus" = ""
   "houdini" = ""
   "hypercube" = ""
@@ -215,7 +212,6 @@ DEPENDENCIES = {
   "crayfits" = ["scyllaridae"]
   "drupal-php83" = ["nginx-php83"]
   "drupal-php84" = ["nginx-php84"]
-  "go1-26" = ["base"]
   "homarus" = ["scyllaridae"]
   "houdini" = ["scyllaridae"]
   "hypercube" = ["scyllaridae", "leptonica"]
@@ -238,7 +234,7 @@ DEPENDENCIES = {
   "omeka-s-php84" = ["nginx-php84"]
   "php83" = ["base"]
   "php84" = ["base"]
-  "scyllaridae" = ["base", "go1-26"]
+  "scyllaridae" = ["base"]
   "solr9" = ["java17"]
   "solr10" = ["java25"]
   "tomcat9" = ["java17"]
@@ -427,11 +423,6 @@ target "drupal-php84-common" {
   args = {
     PHP_BASE = "nginx-php84"
   }
-}
-
-target "go1-26-common" {
-  inherits = ["common"]
-  context = context("go1-26")
 }
 
 target "homarus-common" {

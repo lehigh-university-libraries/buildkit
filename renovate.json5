@@ -20,22 +20,53 @@
   ],
   packageRules: [
     {
-      "matchDepNames": [
-        "php84-source"
-      ],
-      "allowedVersions": "/^8\\.4\\.[0-9]+$/",
-      "groupName": null,
-      "minimumReleaseAge": null,
-      "schedule": [],
-      "postUpgradeTasks": {
-        "commands": [
-          "bash ci/update-php.sh php84"
-        ],
-        "fileFilters": [
-          "images/php84/build/APKBUILD",
-          "images/php84/Dockerfile"
-        ]
-      }
+      matchManagers: ['dockerfile'],
+      matchPackageNames: ['ghcr.io/libops/go'],
+      matchFileNames: ['images/scyllaridae/Dockerfile'],
+      versioning: 'loose',
+      allowedVersions: '/^1\\.26\\..*-alpine3\\.24$/',
+    },
+    {
+      matchManagers: ['dockerfile'],
+      matchPackageNames: ['ghcr.io/libops/java'],
+      matchFileNames: ['images/java21/Dockerfile'],
+      versioning: 'loose',
+      allowedVersions: '/^21\\..*-alpine3\\.24$/',
+    },
+    {
+      matchManagers: ['dockerfile'],
+      matchPackageNames: ['ghcr.io/libops/java'],
+      matchFileNames: ['images/java25/Dockerfile'],
+      versioning: 'loose',
+      allowedVersions: '/^25\\..*-alpine3\\.24$/',
+    },
+    {
+      matchManagers: ['dockerfile'],
+      matchPackageNames: ['ghcr.io/libops/php'],
+      matchFileNames: ['images/php84/Dockerfile'],
+      versioning: 'loose',
+      allowedVersions: '/^8\\.4\\..*-alpine3\\.24$/',
+    },
+    {
+      matchManagers: ['dockerfile'],
+      matchPackageNames: ['ghcr.io/libops/nginx'],
+      matchFileNames: ['images/nginx/Dockerfile'],
+      versioning: 'loose',
+      allowedVersions: '/^1\\.30\\..*-alpine3\\.24$/',
+    },
+    {
+      matchManagers: ['dockerfile'],
+      matchPackageNames: ['ghcr.io/libops/python'],
+      matchFileNames: ['images/python3-13/Dockerfile'],
+      versioning: 'loose',
+      allowedVersions: '/^3\\.13\\..*-alpine3\\.24$/',
+    },
+    {
+      matchManagers: ['dockerfile'],
+      matchPackageNames: ['ghcr.io/libops/python'],
+      matchFileNames: ['images/python3-14/Dockerfile'],
+      versioning: 'loose',
+      allowedVersions: '/^3\\.14\\..*-alpine3\\.24$/',
     },
     {
       "matchDepNames": [
@@ -54,30 +85,6 @@
           "images/php83/Dockerfile"
         ]
       }
-    },
-    {
-      matchManagers: [
-        'dockerfile',
-      ],
-      matchPackageNames: [
-        'python',
-      ],
-      matchFileNames: [
-        'images/python3-13/Dockerfile',
-      ],
-      allowedVersions: '/^3\\.13([.-]|$)/',
-    },
-    {
-      matchManagers: [
-        'dockerfile',
-      ],
-      matchPackageNames: [
-        'python',
-      ],
-      matchFileNames: [
-        'images/python3-14/Dockerfile',
-      ],
-      allowedVersions: '/^3\\.14([.-]|$)/',
     },
     {
       matchDepNames: [
@@ -221,7 +228,6 @@
         'crosswalk',
         'islandora-workbench',
         'drupal-recommended-project',
-        'golang',
         'islandora-starter-site',
         'mysql-connector-j',
         'ojs',
@@ -247,21 +253,6 @@
     },
   ],
   customManagers: [
-    {
-      "customType": "regex",
-      "description": "Update vendored PHP source",
-      "managerFilePatterns": [
-        "/^images/php84/build/APKBUILD$/"
-      ],
-      "matchStrings": [
-        "pkgver=(?<currentValue>8\\.4\\.[0-9]+)"
-      ],
-      "datasourceTemplate": "github-tags",
-      "packageNameTemplate": "php/php-src",
-      "depNameTemplate": "php84-source",
-      "extractVersionTemplate": "^php-(?<version>8\\.4\\.[0-9]+)$",
-      "versioningTemplate": "semver"
-    },
     {
       "customType": "regex",
       "description": "Update vendored PHP source",

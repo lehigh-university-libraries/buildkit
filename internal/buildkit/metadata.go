@@ -191,11 +191,8 @@ func dockerfileArgDefault(dockerfile string, arg string) (string, error) {
 
 func normalizeVersion(image, version string) string {
 	version = strings.Trim(version, `"`)
+	version = regexp.MustCompile(`-alpine[0-9.]+$`).ReplaceAllString(version, "")
 	version = regexp.MustCompile(`-r[0-9]+$`).ReplaceAllString(version, "")
-	switch image {
-	case "go1-26":
-		return strings.TrimPrefix(version, "go")
-	}
 	return version
 }
 
@@ -334,12 +331,7 @@ func imageContext(image string) string {
 }
 
 func includeMajorTag(image string) bool {
-	switch image {
-	case "go1-26":
-		return false
-	default:
-		return !regexp.MustCompile(`^php8[3-5]$`).MatchString(image)
-	}
+	return !regexp.MustCompile(`^php8[3-5]$`).MatchString(image)
 }
 
 func appendTagSuffix(tag, suffix string) string {

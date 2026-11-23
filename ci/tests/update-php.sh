@@ -3,7 +3,7 @@ set -euo pipefail
 root=$(cd "$(dirname "$0")/../.." && pwd)
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
-for flavor in php83 php84; do
+flavor=php83
 minor="8.${flavor: -1}"
 mkdir -p "$tmp/ci" "$tmp/images/$flavor/build" "$tmp/bin"
 cp "$root/ci/update-php.sh" "$tmp/ci/"
@@ -35,6 +35,5 @@ if BAD_CHECKSUM=1 bash "$tmp/ci/update-php.sh" "$flavor" "$minor.99"; then exit 
 cmp "$tmp/before" "$tmp/images/$flavor/build/APKBUILD"
 for invalid in 8.5.0 "8x${flavor: -1}.99" "$minor.99RC1"; do
     if bash "$tmp/ci/update-php.sh" "$flavor" "$invalid"; then exit 1; fi
-done
 done
 echo 'PHP updater checks passed'

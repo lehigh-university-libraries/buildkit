@@ -3,8 +3,8 @@ set -euo pipefail
 
 # Called by Renovate with a flavor, or manually with a flavor and version.
 cd "$(dirname "$0")/.."
-flavor=${1:?Usage: update-php.sh php83|php84 [version]}
-case "$flavor" in php83) minor=8.3 ;; php84) minor=8.4 ;; *) echo 'Expected php83 or php84' >&2; exit 1 ;; esac
+flavor=${1:?Usage: update-php.sh php83 [version]}
+case "$flavor" in php83) minor=8.3 ;; *) echo 'Expected php83' >&2; exit 1 ;; esac
 version=${2:-$(sed -n 's/^pkgver=//p' "images/$flavor/build/APKBUILD")}
 [[ "$version" =~ ^8[.]${flavor: -1}[.][0-9]+$ ]] || { echo "Expected a stable PHP $minor.x version" >&2; exit 1; }
 tmp=$(mktemp -d)

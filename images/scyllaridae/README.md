@@ -7,9 +7,10 @@ be run on its own it is only used to cache the download.
 
 ## Dependencies
 
-Requires `lehighlts/base` and `lehighlts/go:1.26` Docker images to build. Please refer
-to the [Base Image README](../base/README.md) and
-[Go 1.26 Image README](../go1-26/README.md) for additional information.
+Requires `lehighlts/base` and the digest-pinned [LibOps Go 1.26 package
+carrier](https://libops.github.io/packages/packages/) to build. Go is installed
+only in the builder stage. See the [Base Image README](../base/README.md)
+for additional information.
 
 ## Ports
 

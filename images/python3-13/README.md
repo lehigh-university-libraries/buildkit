@@ -27,5 +27,5 @@ additional settings, volumes, ports, etc.
 | `WORKERS`                   | `4`                                        | Number of worker processes for handling requests                  |
 | `SCRIPT_NAME`               | `/`                                        | WSGI SCRIPT_NAME for mounting the application at a URL prefix     |
 
-Uses the shared Alpine/s6 base with the official Python 3.13 runtime.
+Uses the shared Alpine/s6 base with the [LibOps Python 3.13 packages](https://libops.github.io/packages/packages/).
 Downstream applications should use Alpine packages when installing OS dependencies.
