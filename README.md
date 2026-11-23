@@ -127,3 +127,20 @@ OJS scheduler task from `/var/www/ojs` as the application user:
 php lib/pkp/tools/scheduler.php test --name='PKP\task\UpdateRorRegistryDataset'
 php lib/pkp/tools/scheduler.php test --name='PKP\task\UpdateIPGeoDB'
 ```
+
+### LibOps runtime packages
+
+Go 1.26, OpenJDK 21/25, PHP 8.4, Nginx 1.30, and Python 3.13/3.14 use
+[digest-pinned LibOps package carriers](https://libops.github.io/packages/packages/)
+for Alpine 3.24. Scyllaridae consumes the Go carrier directly in its builder
+stage; this repository does not publish a Go image. Their installers verify and install the carrier APKs; Renovate
+keeps updates within each software line and Alpine release. PHP 8.3 and Java 17
+retain their existing sources because the catalog has no matching carriers.
+
+### Required CI check
+
+Use **Required checks** from the Build and Push Docker Images workflow as the
+required status check for branch protection and automerge. It runs on every push,
+requires lint and planning to succeed, and checks every selected image build and
+test across all dependency levels. Empty matrices may be skipped; selected ones
+must succeed. Repository branch protection must require this check.

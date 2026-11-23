@@ -1,13 +1,13 @@
-FROM python:3.14-alpine3.24@sha256:5862d971d1f0ae26b258cefa4e893556b1d3aba81bd2ff30888704ad378bab67 AS python
+FROM ghcr.io/libops/python:3.14.10-r4-alpine3.24@sha256:8fc608fa528275487fc14a2e6eaa5b9e26dcf2078631f2a151b57e87846fcb08 AS python_packages
 FROM base
 
 WORKDIR /app
 
-COPY --from=python /usr/local/ /usr/local/
-RUN apk add --no-cache libbz2 libffi gdbm xz-libs ncurses-libs readline sqlite-libs libuuid && \
+RUN --mount=type=bind,from=python_packages,source=/packages,target=/packages \
+    /packages/python314 && \
     python3 -c 'import bz2, ctypes, dbm.gnu, lzma, readline, sqlite3, ssl, uuid; assert __import__("sys").version_info[:2] == (3, 14)' && \
     create-service-user.sh --name pyapp /app && \
-    pip install --no-cache-dir uv && \
+    python3 -m pip install --no-cache-dir --break-system-packages uv && \
     uv --version && cleanup.sh
 
 ENV PIP_BREAK_SYSTEM_PACKAGES=1 \

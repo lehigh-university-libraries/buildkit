@@ -36,7 +36,7 @@ func TestImportedImagesFollowDependencyPlan(t *testing.T) {
 }
 
 func TestMigrationScripts(t *testing.T) {
-	for _, script := range []string{"update-sha-imports.sh", "package-access-migration.sh"} {
+	for _, script := range []string{"update-sha-imports.sh", "package-access-migration.sh", "required-checks.sh"} {
 		t.Run(script, func(t *testing.T) {
 			command := exec.Command("bash", filepath.Join(repoRoot(t), "ci", "tests", script))
 			if output, err := command.CombinedOutput(); err != nil {

@@ -1,4 +1,5 @@
-FROM go1-26 AS builder
+FROM ghcr.io/libops/go:1.26.11-r6-alpine3.24@sha256:b86cc64d264588ceaa06b8984c716fa96991ceada485996d9d78c538a9fbe440 AS go_packages
+FROM base AS builder
 
 WORKDIR /build
 
@@ -13,7 +14,9 @@ RUN download.sh \
 
 WORKDIR /build/scyllaridae-${SOFTWARE_VERSION}
 
-RUN CGO_ENABLED=0 go build -o ../scyllaridae -ldflags="-s -w" .
+RUN --mount=type=bind,from=go_packages,source=/packages,target=/packages \
+    /packages/go126 && \
+    CGO_ENABLED=0 go build -o ../scyllaridae -ldflags="-s -w" .
 
 FROM base
 

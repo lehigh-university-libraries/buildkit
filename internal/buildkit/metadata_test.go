@@ -1561,3 +1561,15 @@ func TestMySQLBackupMetadata(t *testing.T) {
 		t.Fatalf("backup dependencies = %v, error %v", deps, err)
 	}
 }
+
+func TestCarrierVersionTags(t *testing.T) {
+	for _, tc := range []struct{ image, version, want string }{
+		{"java21", "21.0.13.1_p2-r3-alpine3.24", "21.0.13.1_p2"},
+		{"php84", "8.4.28-r6-alpine3.24", "8.4.28"},
+		{"nginx", "1.30.7-r3-alpine3.24", "1.30.7"},
+	} {
+		if got := normalizeVersion(tc.image, tc.version); got != tc.want {
+			t.Errorf("normalizeVersion(%q, %q) = %q, want %q", tc.image, tc.version, got, tc.want)
+		}
+	}
+}

@@ -1,20 +1,19 @@
 # syntax=docker/dockerfile:1.29.0@sha256:572cebbc2b15e6f84c077742952674889cb63cd5e9b80abdffcbe587b6f19183
 ARG PHP_BASE=php83
+ARG NGINX_VERSION=1.30.7-r3-alpine3.24
+FROM ghcr.io/libops/nginx:${NGINX_VERSION}@sha256:f075c367b89b58aec31c9790dc668015b96e746a6a49fecd7fb478ebb43578fe AS nginx_packages
 FROM ${PHP_BASE}
 
 ARG TARGETARCH
 ARG PHP_FPM_SOCKET=/run/php-fpm/php-fpm.sock
 
-ARG \
-    # renovate: datasource=repology depName=alpine_3_24/nginx
-    NGINX_VERSION=1.30.7-r0
-
 EXPOSE 80
 
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 
-RUN --mount=type=cache,id=nginx-apk-${TARGETARCH},sharing=locked,target=/var/cache/apk \
-    apk add nginx=="${NGINX_VERSION}" && \
+RUN --mount=type=bind,from=nginx_packages,source=/packages,target=/packages \
+    --mount=type=cache,id=nginx-apk-${TARGETARCH},sharing=locked,target=/var/cache/apk \
+    /packages/nginx && \
     mkdir -p /etc/nginx/shared && \
     if ! id -nG nginx | tr ' ' '\n' | grep -qx jwt; then addgroup nginx jwt; fi && \
     cleanup.sh

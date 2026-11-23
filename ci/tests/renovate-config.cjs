@@ -59,20 +59,25 @@ for (const depName of ['gha-runner', 'crosswalk']) {
   }
 }
 
-for (const minor of [13, 14]) {
-  const file = `images/python3-${minor}/Dockerfile`;
+for (const [image, family, line] of [
+  ['scyllaridae', 'go', '1.26'], ['java21', 'java', '21'],
+  ['java25', 'java', '25'], ['php84', 'php', '8.4'],
+  ['nginx', 'nginx', '1.30'], ['python3-13', 'python', '3.13'],
+  ['python3-14', 'python', '3.14'],
+]) {
+  const file = `images/${image}/Dockerfile`;
   const rule = config.packageRules.find(r => r.matchFileNames?.includes(file));
   assert(rule.matchManagers.includes('dockerfile'));
-  assert(rule.matchPackageNames.includes('python'));
+  assert(rule.matchPackageNames.includes(`ghcr.io/libops/${family}`));
   const allowed = new RegExp(rule.allowedVersions.slice(1, -1));
-  for (const tag of [`3.${minor}`, `3.${minor}-alpine3.24`, `3.${minor}.9-alpine3.25`]) {
-    assert(allowed.test(tag), `${file} must allow ${tag}`);
-  }
-  for (const tag of ['3.12-alpine3.24', `3.${minor + 1}-alpine3.24`, `3.${minor}0-alpine3.24`, '4.0-alpine3.24']) {
+  assert(allowed.test(`${line}.99-r9-alpine3.24`));
+  for (const tag of [`${line}.99-r9-alpine3.25`, `${line}0.99-r9-alpine3.24`, '99.0.0-r0-alpine3.24']) {
     assert(!allowed.test(tag), `${file} must reject ${tag}`);
   }
   const dockerfile = fs.readFileSync(path.join(root, file), 'utf8');
-  assert(allowed.test(dockerfile.match(/^FROM python:([^@]+)/)[1]));
+  let tag = dockerfile.match(/FROM ghcr\.io\/libops\/[^:]+:([^@]+)@sha256:[a-f0-9]{64}/)[1];
+  tag = tag.replace(/\$\{([^}]+)\}/g, (_, arg) => dockerfile.match(new RegExp(`^ARG ${arg}=(.+)$`, 'm'))[1]);
+  assert(allowed.test(tag), `${file} must allow ${tag}`);
 }
 console.log(`Renovate extraction checks passed for ${dependencies} distribution dependencies.`);
 
@@ -84,7 +89,7 @@ assert.equal(scalarPin.groups.currentValue, 'master');
 assert.match(scalarPin.groups.currentDigest, /^[a-f0-9]{40}$/);
 assert(config.packageRules.some(r => r.matchDepNames?.includes('scalar') && r.allowedVersions === null));
 
-for (const flavor of ['php83', 'php84']) {
+for (const flavor of ['php83']) {
   const minor = `8.${flavor.at(-1)}`;
   const source = config.customManagers.find(m => m.depNameTemplate === `${flavor}-source`);
   const aport = fs.readFileSync(path.join(root, `images/${flavor}/build/APKBUILD`), 'utf8');

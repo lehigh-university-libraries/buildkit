@@ -237,20 +237,6 @@ elif [ "$DEP" = "mysql-connector-j" ]; then
   ARG="MYSQL_CONNECTOR_SHA256"
   DOCKERFILES=("images/archivesspace/Dockerfile")
 
-elif [ "$DEP" = "golang" ]; then
-  BASE_URL="https://go.dev/dl/${NEW_VERSION}"
-  declare -A URLS_AND_ARGS=(
-    ["GO_AMD64_SHA256"]="$BASE_URL.linux-amd64.tar.gz"
-    ["GO_ARM64_SHA256"]="$BASE_URL.linux-arm64.tar.gz"
-  )
-
-  for ARG in "${!URLS_AND_ARGS[@]}"; do
-    URL="${URLS_AND_ARGS[$ARG]}"
-    update_dockerfile_sha "$URL" "$ARG" "images/go1-26/Dockerfile"
-  done
-
-  exit 0
-
 elif [ "$DEP" = "scyllaridae" ] ; then
   URL="https://github.com/islandora/scyllaridae/archive/refs/tags/${NEW_VERSION}.tar.gz"
   ARG=SCYLLARIDAE_SHA256

@@ -1,21 +1,10 @@
 # syntax=docker/dockerfile:1.20.0
-# Keep PHP independent of runtime ARGs and rootfs so their changes reuse this stage.
-FROM alpine:3.24.1@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b AS php-build
-
-RUN apk add --no-cache alpine-sdk sudo && \
-    adduser -D -G abuild builder && \
-    echo 'builder ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/builder
-COPY --chown=builder:abuild build /home/builder/aports/php84
-USER builder
-WORKDIR /home/builder/aports/php84
-RUN abuild-keygen -ain && abuild-apk update && abuild -r && \
-    mkdir /home/builder/apks && \
-    find /home/builder/packages -name '*.apk' -exec cp {} /home/builder/apks/ \; && \
-    rm /home/builder/.abuild/*.rsa
-
+ARG SOFTWARE_VERSION=8.4.28-r6-alpine3.24
+FROM ghcr.io/libops/php:${SOFTWARE_VERSION}@sha256:9018341576b59c8938fd26c268ff3eb1e0d00ec0a24ba08365584c7330b90ebd AS php_packages
 FROM base
 
 ARG TARGETARCH
+ARG SOFTWARE_VERSION
 # renovate: datasource=github-releases depName=custom-composer packageName=composer/composer
 ARG COMPOSER_VERSION=2.11.2
 ARG COMPOSER_FILE=composer.phar
@@ -37,53 +26,44 @@ RUN --mount=type=cache,id=php84-downloads-${TARGETARCH},sharing=locked,target=/o
 
 ARG \
     # renovate: datasource=repology depName=alpine_3_24/icu-data-full
-    ICU_VERSION=78.1-r0 \
-    # PHP is built from the vendored aport; ci/update-php.sh updates this pin.
-    SOFTWARE_VERSION=8.4.28-r0
+    ICU_VERSION=78.1-r0
 
 # Platform specific does require arch specific identifier.
-RUN --mount=type=bind,from=php-build,source=/home/builder/apks,target=/packages \
-    --mount=type=bind,from=php-build,source=/etc/apk/keys,target=/etc/apk/keys \
+RUN --mount=type=bind,from=php_packages,source=/packages,target=/packages \
     --mount=type=cache,id=php84-apk-${TARGETARCH},sharing=locked,target=/var/cache/apk \
-    apk add \
-        icu-data-full=="${ICU_VERSION}" \
-        /packages/php84-common-${SOFTWARE_VERSION}.apk \
-        /packages/php84-mysqlnd-${SOFTWARE_VERSION}.apk \
-        /packages/php84-${SOFTWARE_VERSION}.apk \
-        /packages/php84-bcmath-${SOFTWARE_VERSION}.apk \
-        /packages/php84-exif-${SOFTWARE_VERSION}.apk \
-        /packages/php84-ftp-${SOFTWARE_VERSION}.apk \
-        /packages/php84-gettext-${SOFTWARE_VERSION}.apk \
-        /packages/php84-ctype-${SOFTWARE_VERSION}.apk \
-        /packages/php84-curl-${SOFTWARE_VERSION}.apk \
-        /packages/php84-dom-${SOFTWARE_VERSION}.apk \
-        /packages/php84-fileinfo-${SOFTWARE_VERSION}.apk \
-        /packages/php84-fpm-${SOFTWARE_VERSION}.apk \
-        /packages/php84-gd-${SOFTWARE_VERSION}.apk \
-        /packages/php84-iconv-${SOFTWARE_VERSION}.apk \
-        /packages/php84-intl-${SOFTWARE_VERSION}.apk \
-        /packages/php84-ldap-${SOFTWARE_VERSION}.apk \
-        /packages/php84-mbstring-${SOFTWARE_VERSION}.apk \
-        /packages/php84-mysqli-${SOFTWARE_VERSION}.apk \
-        /packages/php84-opcache-${SOFTWARE_VERSION}.apk \
-        /packages/php84-openssl-${SOFTWARE_VERSION}.apk \
-        /packages/php84-pdo-${SOFTWARE_VERSION}.apk \
-        /packages/php84-pdo_mysql-${SOFTWARE_VERSION}.apk \
-        /packages/php84-phar-${SOFTWARE_VERSION}.apk \
-        /packages/php84-session-${SOFTWARE_VERSION}.apk \
-        /packages/php84-simplexml-${SOFTWARE_VERSION}.apk \
-        /packages/php84-sockets-${SOFTWARE_VERSION}.apk \
-        /packages/php84-tokenizer-${SOFTWARE_VERSION}.apk \
-        /packages/php84-xml-${SOFTWARE_VERSION}.apk \
-        /packages/php84-xmlreader-${SOFTWARE_VERSION}.apk \
-        /packages/php84-xmlwriter-${SOFTWARE_VERSION}.apk \
-        /packages/php84-xsl-${SOFTWARE_VERSION}.apk \
-        /packages/php84-zip-${SOFTWARE_VERSION}.apk \
-    && \
+    /packages/php84 && \
+    apk add icu-data-full=="${ICU_VERSION}" && \
+    /packages/php84-bcmath && \
+    /packages/php84-exif && \
+    /packages/php84-ftp && \
+    /packages/php84-gettext && \
+    /packages/php84-ctype && \
+    /packages/php84-curl && \
+    /packages/php84-dom && \
+    /packages/php84-fileinfo && \
+    /packages/php84-gd && \
+    /packages/php84-iconv && \
+    /packages/php84-intl && \
+    /packages/php84-ldap && \
+    /packages/php84-mbstring && \
+    /packages/php84-mysqli && \
+    /packages/php84-openssl && \
+    /packages/php84-pdo && \
+    /packages/php84-pdo_mysql && \
+    /packages/php84-phar && \
+    /packages/php84-session && \
+    /packages/php84-simplexml && \
+    /packages/php84-sockets && \
+    /packages/php84-tokenizer && \
+    /packages/php84-xml && \
+    /packages/php84-xmlreader && \
+    /packages/php84-xmlwriter && \
+    /packages/php84-xsl && \
+    /packages/php84-zip && \
     ln -sf /usr/bin/php84 /usr/bin/php && \
     ln -sf /usr/bin/php84 /usr/local/bin/php && \
     command -v php >/dev/null && \
-    php -r 'exit(PHP_VERSION === $argv[1] ? 0 : 1);' "${SOFTWARE_VERSION%-r*}" && \
+    php -r 'exit(PHP_VERSION === $argv[1] ? 0 : 1);' "${SOFTWARE_VERSION%%-r*}" && \
     if ! getent group nginx >/dev/null; then addgroup -S nginx; fi && \
     if ! id -u nginx >/dev/null 2>&1; then adduser -S -D -H -h /var/lib/nginx -s /sbin/nologin -G nginx -g nginx nginx; fi && \
     addgroup nginx jwt && \
