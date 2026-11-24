@@ -46,7 +46,7 @@ ARG \
   # renovate: datasource=repology depName=alpine_3_24/procps-ng
   PROCPS_VERSION=4.0.6-r0 \
   # renovate: datasource=repology depName=alpine_3_24/shadow
-  SHADOW_VERSION=4.18.0-r1 \
+  SHADOW_VERSION=4.20.4-r0 \
   # renovate: datasource=repology depName=alpine_3_24/tar
   TAR_VERSION=1.35-r5 \
   # renovate: datasource=repology depName=alpine_3_24/util-linux
