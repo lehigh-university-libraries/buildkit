@@ -71,10 +71,10 @@ RUN case "${TARGETARCH}" in \
 
 # install composer
 # renovate: datasource=github-releases depName=custom-composer packageName=composer/composer
-ARG COMPOSER_VERSION=2.11.2
+ARG COMPOSER_VERSION=2.11.3
 ARG COMPOSER_FILE=composer.phar
 ARG COMPOSER_URL=https://getcomposer.org/download/${COMPOSER_VERSION}/${COMPOSER_FILE}
-ARG COMPOSER_SHA256="dd158c0afd41d15fac89e1b4e47b5d42911fe316c3687cd5edac98319b25d028"
+ARG COMPOSER_SHA256="04f8b003da4e3a2459056591fbfebd02b4dc3e5adeb158616b90cf55a65113ec"
 RUN curl -fsSLo "${COMPOSER_FILE}" "${COMPOSER_URL}" && \
     echo "${COMPOSER_SHA256}  ${COMPOSER_FILE}" | sha256sum -c && \
     mv "${COMPOSER_FILE}" /usr/bin/composer && \

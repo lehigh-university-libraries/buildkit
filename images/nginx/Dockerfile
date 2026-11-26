@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.29.0@sha256:572cebbc2b15e6f84c077742952674889cb63cd5e9b80abdffcbe587b6f19183
 ARG PHP_BASE=php83
-ARG NGINX_VERSION=1.30.7-r3-alpine3.24
-FROM ghcr.io/libops/nginx:${NGINX_VERSION}@sha256:f075c367b89b58aec31c9790dc668015b96e746a6a49fecd7fb478ebb43578fe AS nginx_packages
+ARG NGINX_VERSION=1.30.8-r0-alpine3.24
+FROM ghcr.io/libops/nginx:${NGINX_VERSION}@sha256:76279a3494f95671f07601ab06ffabed6e8a0261654b9549cc5a4a5fdeb3a7f0 AS nginx_packages
 FROM ${PHP_BASE}
 
 ARG TARGETARCH
