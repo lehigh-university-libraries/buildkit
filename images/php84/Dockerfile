@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.20.0
+# syntax=docker/dockerfile:1.29.0@sha256:572cebbc2b15e6f84c077742952674889cb63cd5e9b80abdffcbe587b6f19183
 ARG SOFTWARE_VERSION=8.4.28-r6-alpine3.24
 FROM ghcr.io/libops/php:${SOFTWARE_VERSION}@sha256:9018341576b59c8938fd26c268ff3eb1e0d00ec0a24ba08365584c7330b90ebd AS php_packages
 FROM base
@@ -6,10 +6,10 @@ FROM base
 ARG TARGETARCH
 ARG SOFTWARE_VERSION
 # renovate: datasource=github-releases depName=custom-composer packageName=composer/composer
-ARG COMPOSER_VERSION=2.11.2
+ARG COMPOSER_VERSION=2.11.3
 ARG COMPOSER_FILE=composer.phar
 ARG COMPOSER_URL=https://getcomposer.org/download/${COMPOSER_VERSION}/${COMPOSER_FILE}
-ARG COMPOSER_SHA256="dd158c0afd41d15fac89e1b4e47b5d42911fe316c3687cd5edac98319b25d028"
+ARG COMPOSER_SHA256="04f8b003da4e3a2459056591fbfebd02b4dc3e5adeb158616b90cf55a65113ec"
 
 WORKDIR /var/www
 
